@@ -4,7 +4,9 @@ defmodule Sqids do
 
   ## Constants
 
+  # url-safe characters
   @default_alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
   @default_min_length 0
   @default_blocklist_entries "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
 
@@ -25,7 +27,6 @@ defmodule Sqids do
     defstruct [:alphabet, :min_length, :blocklist]
 
     @type t :: %__MODULE__{
-            # url-safe characters
             alphabet: Alphabet.t(),
             # the minimum length IDs should be
             min_length: non_neg_integer,
