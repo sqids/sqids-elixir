@@ -47,6 +47,13 @@ defmodule SqidsTest do
     end
   end
 
+  defmodule Blocklist do
+    @moduledoc false
+    use ExUnit.Case, async: true
+
+    # TODO implement blocklist properly
+  end
+
   defmodule Encoding do
     @moduledoc false
     use ExUnit.Case, async: true
