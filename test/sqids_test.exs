@@ -11,5 +11,6 @@ defmodule SqidsTest do
     assert Sqids.encode!(ctx, [123]) == "UKk"
     assert Sqids.encode!(ctx, [1234]) == "A4W"
     assert Sqids.encode!(ctx, [12_345]) == "A6da"
+    assert Sqids.encode!(ctx, [40, 90]) == "RYer3"
   end
 end
