@@ -133,12 +133,13 @@ defmodule Sqids.Alphabet do
   defp validate_alphabet_has_unique_chars(alphabet_str) do
     chars = :erlang.binary_to_list(alphabet_str)
 
-    case Enum.uniq(chars) -- chars do
+    case chars -- Enum.uniq(chars) do
       [] ->
         :ok
 
       repeated_chars ->
-        {:error, {:alphabet_contains_repeated_chars, repeated_chars}}
+        repeated_graphemes = for char <- repeated_chars, do: <<char>>
+        {:error, {:alphabet_contains_repeated_graphemes, repeated_graphemes}}
     end
   end
 

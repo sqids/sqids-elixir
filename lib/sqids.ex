@@ -54,13 +54,13 @@ defmodule Sqids do
     end
   end
 
-  @spec encode!(Ctx.t(), [non_neg_integer]) :: String.t()
+  @spec encode!(Ctx.t(), Enumerable.t(non_neg_integer)) :: String.t()
   def encode!(ctx, numbers) do
     {:ok, string} = encode(ctx, numbers)
     string
   end
 
-  @spec encode(Ctx.t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
+  @spec encode(Ctx.t(), Enumerable.t(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
   defp encode(%Ctx{} = ctx, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->
