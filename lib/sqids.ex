@@ -12,6 +12,13 @@ defmodule Sqids do
 
   defmodule Ctx do
     @moduledoc false
+
+    @type opts :: [
+            alphabet: String.t(),
+            min_length: non_neg_integer,
+            blocklist: Enumerable.t(String.t())
+          ]
+
     @enforce_keys [:alphabet, :min_length, :blocklist]
     defstruct [:alphabet, :min_length, :blocklist]
 
@@ -27,6 +34,7 @@ defmodule Sqids do
 
   ## API Functions
 
+  @spec new(Ctx.opts()) :: {:ok, Ctx.t()} | {:error, term}
   def new(opts \\ []) do
     alphabet_str = opts[:alphabet] || @default_alphabet
     min_length = opts[:min_length] || @default_min_length
@@ -46,15 +54,42 @@ defmodule Sqids do
     end
   end
 
+  @spec encode!(Ctx.t(), [non_neg_integer]) :: String.t()
   def encode!(ctx, numbers) do
     {:ok, string} = encode(ctx, numbers)
     string
   end
 
+  @spec encode(Ctx.t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
   defp encode(%Ctx{} = ctx, numbers) do
-    case validate_numbers_are_valid(numbers) do
+    case validate_numbers(numbers) do
       {:ok, numbers_list} ->
         encode_numbers(ctx, numbers_list)
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  @spec decode!(Ctx.t(), String.t()) :: [number]
+  def decode!(ctx, id) do
+    {:ok, numbers} = decode(ctx, id)
+    numbers
+  end
+
+  @spec decode(Ctx.t(), String.t()) :: {:ok, [number]} | {:error, term}
+  def decode(%Ctx{} = ctx, id) do
+    case validate_id(ctx, id) do
+      :ok ->
+        decode_valid_id(ctx, id)
+
+      :empty_id ->
+        # if id is empty, return an empty list
+        {:ok, []}
+
+      :unknown_chars_in_id ->
+        # TODO review, I think we should return an error
+        {:ok, []}
 
       {:error, _} = error ->
         error
@@ -94,7 +129,9 @@ defmodule Sqids do
     end
   end
 
-  defp validate_numbers_are_valid(numbers) do
+  ## Internal Functions: Encoding
+
+  defp validate_numbers(numbers) do
     numbers
     |> Enum.find(&(not is_valid_number(&1)))
     |> case do
@@ -238,5 +275,90 @@ defmodule Sqids do
       id = IO.iodata_to_binary(id_iodata)
       id
     end
+  end
+
+  ## Internal Functions: Decoding
+
+  defp validate_id(_ctx, ""), do: :empty_id
+
+  defp validate_id(ctx, id) when is_binary(id) do
+    if are_all_chars_in_id_known(id, ctx.alphabet) do
+      :ok
+    else
+      :unknown_chars_in_id
+    end
+  end
+
+  defp validate_id(_ctx, not_a_string) do
+    {:error, {:id_not_a_string, not_a_string}}
+  end
+
+  defp are_all_chars_in_id_known(id, alphabet) do
+    id |> String.graphemes() |> Enum.all?(&Alphabet.is_known_symbol(alphabet, &1))
+  end
+
+  defp decode_valid_id(ctx, id) do
+    alphabet = ctx.alphabet
+
+    # first character is always the `prefix`
+    <<prefix, id::bytes>> = id
+
+    # `alphabet_split_offset` is the semi-random position that was generated during encoding
+    alphabet_split_offset = Alphabet.index_of!(alphabet, prefix)
+
+    # rearrange alphabet into its original form
+    alphabet = Alphabet.split_and_exchange!(alphabet, alphabet_split_offset)
+
+    # reverse alphabet
+    alphabet = Alphabet.reverse(alphabet)
+
+    decode_valid_id_recur(id, alphabet, _acc = [])
+  end
+
+  defp decode_valid_id_recur("" = _id, _alphabet, acc) do
+    finish_decoding_valid_id(acc)
+  end
+
+  defp decode_valid_id_recur(id, alphabet, acc) do
+    separator = Alphabet.char_at!(alphabet, 0)
+
+    case String.split(id, <<separator>>, parts: 2) do
+      ["" = _chunk | _] ->
+        # rest is junk characters
+        finish_decoding_valid_id(acc)
+
+      [last_chunk] ->
+        number = decode_valid_id_chunk(last_chunk, alphabet)
+        acc = [number | acc]
+        finish_decoding_valid_id(acc)
+
+      [chunk, id] ->
+        number = decode_valid_id_chunk(chunk, alphabet)
+        alphabet = Alphabet.shuffle(alphabet)
+        acc = [number | acc]
+        decode_valid_id_recur(id, alphabet, acc)
+    end
+  end
+
+  defp decode_valid_id_chunk(chunk, alphabet) do
+    alphabet_size_without_separator = Alphabet.size(alphabet) - 1
+    decode_valid_id_chunk_recur(chunk, alphabet, alphabet_size_without_separator, _acc = 0)
+  end
+
+  defp decode_valid_id_chunk_recur(chunk, alphabet, alphabet_size_without_separator, acc) do
+    case chunk do
+      <<char, chunk::bytes>> ->
+        digit = Alphabet.index_of!(alphabet, char) - 1
+        acc = acc * alphabet_size_without_separator + digit
+        decode_valid_id_chunk_recur(chunk, alphabet, alphabet_size_without_separator, acc)
+
+      <<>> ->
+        acc
+    end
+  end
+
+  defp finish_decoding_valid_id(acc) do
+    numbers = Enum.reverse(acc)
+    {:ok, numbers}
   end
 end
