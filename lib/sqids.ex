@@ -184,8 +184,8 @@ defmodule Sqids do
       :binary.part(ctx.alphabet, offset, byte_size(ctx.alphabet) - offset) <>
         :binary.part(ctx.alphabet, 0, offset)
 
-    # `prefix` is the first grapheme in the generated ID, used for randomization
-    prefix = String.at(iteration_alphabet, 0)
+    # `prefix` is the first char in the generated ID, used for randomization
+    prefix_char = byte_at_pos(iteration_alphabet, 0)
 
     # reverse alphabet
     iteration_alphabet = reverse_binary(iteration_alphabet)
@@ -193,7 +193,7 @@ defmodule Sqids do
     {iteration_alphabet, id} = encode_input_numbers(iteration_alphabet, list)
 
     # final ID will always have the `prefix` character at the beginning
-    id = prefix <> id
+    id = <<prefix_char, id::bytes>>
 
     id = handle_min_length_requirement(iteration_alphabet, ctx.min_length, id)
 
