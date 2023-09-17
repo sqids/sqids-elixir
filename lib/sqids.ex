@@ -8,6 +8,8 @@ defmodule Sqids do
   @default_min_length 0
   @default_blocklist_entries "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
 
+  @min_length_range 0..255
+
   ## Types
 
   defmodule Ctx do
@@ -98,9 +100,12 @@ defmodule Sqids do
 
   ## Internal Functions
 
+  @doc false
+  def default_alphabet, do: @default_alphabet
+
   defp validate_min_length(min_length) do
-    if not is_integer(min_length) or min_length < 0 do
-      {:error, {:min_length_must_be_a_non_negative_integer, min_length}}
+    if not is_integer(min_length) or min_length not in @min_length_range do
+      {:error, {:min_length_not_an_integer_in_range, min_length, range: @min_length_range}}
     else
       :ok
     end
