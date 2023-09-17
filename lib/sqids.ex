@@ -24,14 +24,14 @@ defmodule Sqids do
     @enforce_keys [:alphabet, :min_length, :blocklist]
     defstruct [:alphabet, :min_length, :blocklist]
 
-    @opaque t :: %__MODULE__{
-              # url-safe characters
-              alphabet: binary,
-              # the minimum length IDs should be
-              min_length: non_neg_integer,
-              # a list of words that shouldn't appear anywhere in the IDs
-              blocklist: MapSet.t(String.t())
-            }
+    @type t :: %__MODULE__{
+            # url-safe characters
+            alphabet: Alphabet.t(),
+            # the minimum length IDs should be
+            min_length: non_neg_integer,
+            # a list of words that shouldn't appear anywhere in the IDs
+            blocklist: MapSet.t(String.t())
+          }
   end
 
   ## API Functions
@@ -56,13 +56,13 @@ defmodule Sqids do
     end
   end
 
-  @spec encode!(Ctx.t(), Enumerable.t(non_neg_integer)) :: String.t()
+  @spec encode!(Ctx.t(), [non_neg_integer]) :: String.t()
   def encode!(ctx, numbers) do
     {:ok, string} = encode(ctx, numbers)
     string
   end
 
-  @spec encode(Ctx.t(), Enumerable.t(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
+  @spec encode(Ctx.t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
   defp encode(%Ctx{} = ctx, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->
@@ -73,13 +73,13 @@ defmodule Sqids do
     end
   end
 
-  @spec decode!(Ctx.t(), String.t()) :: [number]
+  @spec decode!(Ctx.t(), String.t()) :: [non_neg_integer]
   def decode!(ctx, id) do
     {:ok, numbers} = decode(ctx, id)
     numbers
   end
 
-  @spec decode(Ctx.t(), String.t()) :: {:ok, [number]} | {:error, term}
+  @spec decode(Ctx.t(), String.t()) :: {:ok, [non_neg_integer]} | {:error, term}
   def decode(%Ctx{} = ctx, id) do
     case validate_id(ctx, id) do
       :ok ->
