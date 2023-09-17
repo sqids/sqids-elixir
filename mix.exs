@@ -43,8 +43,9 @@ defmodule Sqids.MixProject do
       {:credo, "~> 1.7", only: :dev, runtime: false},
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
-      {:jason, "~> 1.4", only: :dev, runtime: false},
       {:recon, "~> 2.5", only: :dev, runtime: false},
+      {:sqids_blocklist,
+       github: "sqids/sqids-blocklist", branch: "main", only: :dev, runtime: false, app: false, compile: false},
       {:styler, "~> 0.8", only: [:dev, :test], runtime: false}
     ]
   end

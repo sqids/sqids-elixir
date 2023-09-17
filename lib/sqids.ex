@@ -4,7 +4,7 @@ defmodule Sqids do
 
   @default_alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   @default_min_length 0
-  @default_blocklist_entries "blocklist.txt" |> File.read!() |> String.split("\n", trim: true)
+  @default_blocklist_entries "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
 
   ## Types
 
