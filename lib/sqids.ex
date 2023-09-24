@@ -156,22 +156,26 @@ defmodule Sqids do
   defp encode_numbers(_ctx, [] = _list), do: {:ok, ""}
 
   defp encode_numbers(ctx, list) do
-    encode_numbers_recur(ctx, list, _increment = 0)
+    attempt_to_encode_numbers(ctx, list, _attempt_index = 0)
   end
 
-  defp encode_numbers_recur(ctx, _list, increment) when increment > byte_size(ctx.alphabet) do
-    # We've reached max attempts
-    {:error, {:reached_max_attempts_to_regenerate_the_id, increment - 1}}
+  defp attempt_to_encode_numbers(ctx, list, attempt_index) do
+    if attempt_index > Alphabet.size(ctx.alphabet) do
+      # We've reached max attempts
+      {:error, {:reached_max_attempts_to_regenerate_the_id, attempt_index - 1}}
+    else
+      do_attempt_to_encode_numbers(ctx, list, attempt_index)
+    end
   end
 
-  defp encode_numbers_recur(ctx, list, increment) do
+  defp do_attempt_to_encode_numbers(ctx, list, attempt_index) do
     alphabet = ctx.alphabet
     alphabet_size = Alphabet.size(alphabet)
 
     alphabet_split_offset = get_semi_random_offset_from_input_numbers(list, alphabet, alphabet_size)
 
-    # if there's a non-zero `increment`, it's an internal attempt to regenerate the ID
-    alphabet_split_offset = rem(alphabet_split_offset + increment, alphabet_size)
+    # if there's a non-zero `attempt_index`, it's an internal attempt to regenerate the ID
+    alphabet_split_offset = rem(alphabet_split_offset + attempt_index, alphabet_size)
 
     # rearrange the alphabet so that the second half goes in front of the first
     alphabet = Alphabet.split_and_exchange!(alphabet, alphabet_split_offset)
@@ -191,8 +195,8 @@ defmodule Sqids do
 
     # FIXME check for infixes
     if MapSet.member?(ctx.blocklist, id) do
-      # ID has a blocked word, restart with a +1 increment
-      encode_numbers_recur(ctx, list, increment + 1)
+      # ID has a blocked word, restart with a +1 attempt_index
+      attempt_to_encode_numbers(ctx, list, attempt_index + 1)
     else
       {:ok, id}
     end
