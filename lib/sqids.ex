@@ -8,9 +8,10 @@ defmodule Sqids do
   @default_alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
   @default_min_length 0
-  @default_blocklist_entries "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
+  @default_blocklist_words "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
 
   @min_length_range 0..255
+  @min_blocklist_word_length 3
 
   ## Types
 
@@ -31,7 +32,18 @@ defmodule Sqids do
             # the minimum length IDs should be
             min_length: non_neg_integer,
             # a list of words that shouldn't appear anywhere in the IDs
-            blocklist: MapSet.t(String.t())
+            blocklist: Sqids.Blocklist.t()
+          }
+  end
+
+  defmodule Blocklist do
+    @moduledoc false
+    defstruct exact_matches: MapSet.new(), prefixes_and_suffixes: [], matches_anywhere: []
+
+    @type t :: %__MODULE__{
+            exact_matches: MapSet.t(String.t()),
+            prefixes_and_suffixes: [String.t()],
+            matches_anywhere: [String.t()]
           }
   end
 
@@ -41,7 +53,7 @@ defmodule Sqids do
   def new(opts \\ []) do
     alphabet_str = opts[:alphabet] || @default_alphabet
     min_length = opts[:min_length] || @default_min_length
-    blocklist = opts[:blocklist] || @default_blocklist_entries
+    blocklist_words = opts[:blocklist] || @default_blocklist_words
 
     with {:ok, shuffled_alphabet} <- Alphabet.new_shuffled(alphabet_str),
          :ok <- validate_min_length(min_length) do
@@ -49,7 +61,7 @@ defmodule Sqids do
        %Ctx{
          alphabet: shuffled_alphabet,
          min_length: min_length,
-         blocklist: filter_blocklist(blocklist, alphabet_str)
+         blocklist: new_blocklist(blocklist_words, alphabet_str)
        }}
     else
       {:error, _} = error ->
@@ -64,7 +76,7 @@ defmodule Sqids do
   end
 
   @spec encode(Ctx.t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
-  defp encode(%Ctx{} = ctx, numbers) do
+  def encode(%Ctx{} = ctx, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->
         encode_numbers(ctx, numbers_list)
@@ -112,26 +124,49 @@ defmodule Sqids do
     end
   end
 
-  defp filter_blocklist(blocklist, alphabet_str) do
-    alphabet_graphemes_downcased = alphabet_str |> String.downcase() |> String.graphemes()
+  defp new_blocklist(words, alphabet_str) do
+    alphabet_graphemes_downcased = alphabet_str |> String.downcase() |> String.graphemes() |> MapSet.new()
+    sort_fun = fn word -> {String.length(word), word} end
 
-    blocklist
-    |> Enum.reduce(_acc = [], &filter_blocklist_entry(&1, &2, alphabet_graphemes_downcased))
-    |> MapSet.new()
+    words
+    |> Enum.uniq()
+    |> Enum.reduce(
+      _acc0 = %Blocklist{},
+      &maybe_new_blocklist_entry(&1, &2, alphabet_graphemes_downcased)
+    )
+    |> then(fn blocklist ->
+      %{
+        blocklist
+        | prefixes_and_suffixes: Enum.sort_by(blocklist.prefixes_and_suffixes, sort_fun),
+          matches_anywhere: Enum.sort_by(blocklist.matches_anywhere, sort_fun)
+      }
+    end)
   end
 
-  defp filter_blocklist_entry(word, acc, alphabet_graphemes_downcased) do
-    if String.length(word) < 3 do
-      acc
-    else
-      word_downcased = String.downcase(word)
-      word_graphemes_downcased = String.graphemes(word_downcased)
+  defp maybe_new_blocklist_entry(word, blocklist, alphabet_graphemes_downcased) do
+    downcased_word = String.downcase(word)
+    downcased_length = String.length(downcased_word)
 
-      if Enum.all?(word_graphemes_downcased, &Enum.member?(alphabet_graphemes_downcased, &1)) do
-        [word_downcased | acc]
-      else
-        acc
-      end
+    cond do
+      downcased_length < @min_blocklist_word_length ->
+        # Word is too short to include
+        blocklist
+
+      not (downcased_word |> String.graphemes() |> Enum.all?(&MapSet.member?(alphabet_graphemes_downcased, &1))) ->
+        # Word contains characters that are not part of the alphabet
+        blocklist
+
+      downcased_length === @min_blocklist_word_length ->
+        # Short words have to match completely to avoid too many matches
+        %{blocklist | exact_matches: MapSet.put(blocklist.exact_matches, downcased_word)}
+
+      String.match?(downcased_word, ~r/\d/u) ->
+        # Words with leet speak replacements are visible mostly on the ends of an id
+        %{blocklist | prefixes_and_suffixes: [downcased_word | blocklist.prefixes_and_suffixes]}
+
+      true ->
+        # Otherwise, check for word anywhere within an id
+        %{blocklist | matches_anywhere: [downcased_word | blocklist.matches_anywhere]}
     end
   end
 
@@ -193,8 +228,7 @@ defmodule Sqids do
 
     id = handle_min_length_requirement(id_iodata, alphabet, ctx.min_length)
 
-    # FIXME check for infixes
-    if MapSet.member?(ctx.blocklist, id) do
+    if is_blocked_id(ctx.blocklist, id) do
       # ID has a blocked word, restart with a +1 attempt_index
       attempt_to_encode_numbers(ctx, list, attempt_index + 1)
     else
@@ -284,6 +318,24 @@ defmodule Sqids do
     else
       id = IO.iodata_to_binary(id_iodata)
       id
+    end
+  end
+
+  defp is_blocked_id(blocklist, id) do
+    downcased_id = String.downcase(id)
+    downcased_size = byte_size(downcased_id)
+
+    cond do
+      downcased_size < @min_blocklist_word_length ->
+        false
+
+      downcased_size === @min_blocklist_word_length ->
+        MapSet.member?(blocklist.exact_matches, downcased_id)
+
+      true ->
+        String.contains?(downcased_id, blocklist.matches_anywhere) or
+          String.starts_with?(downcased_id, blocklist.prefixes_and_suffixes) or
+          String.ends_with?(downcased_id, blocklist.prefixes_and_suffixes)
     end
   end
 

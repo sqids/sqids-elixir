@@ -51,7 +51,103 @@ defmodule SqidsTest do
     @moduledoc false
     use ExUnit.Case, async: true
 
-    # TODO implement blocklist properly
+    test "if no custom blocklist param, use the default blocklist" do
+      {:ok, ctx} = Sqids.new()
+
+      assert Sqids.decode!(ctx, "aho1e") === [4_572_721]
+      assert Sqids.encode!(ctx, [4_572_721]) === "JExTR"
+    end
+
+    test "if an empty blocklist param passed, don't use any blocklist" do
+      {:ok, ctx} = Sqids.new(blocklist: [])
+
+      assert Sqids.decode!(ctx, "aho1e") === [4_572_721]
+      assert Sqids.encode!(ctx, [4_572_721]) === "aho1e"
+    end
+
+    test "if a non-empty blocklist param passed, use only that" do
+      {:ok, ctx} =
+        Sqids.new(
+          blocklist: [
+            # originally encoded [100_000]
+            "ArUO"
+          ]
+        )
+
+      # make sure we don't use the default blocklist
+      assert Sqids.decode!(ctx, "aho1e") === [4_572_721]
+      assert Sqids.encode!(ctx, [4_572_721]) === "aho1e"
+
+      # make sure we are using the passed blocklist
+      assert Sqids.decode!(ctx, "ArUO") === [100_000]
+      assert Sqids.encode!(ctx, [100_000]) === "QyG4"
+      assert Sqids.decode!(ctx, "QyG4") === [100_000]
+    end
+
+    test "blocklist" do
+      {:ok, ctx} =
+        Sqids.new(
+          blocklist: [
+            # normal result of 1st encoding, let"s block that word on purpose
+            "JSwXFaosAN",
+            # result of 2nd encoding
+            "OCjV9JK64o",
+            # result of 3rd encoding is `4rBHfOiqd3`, let"s block a substring
+            "rBHf",
+            # result of 4th encoding is `dyhgw479SM`, let"s block the postfix
+            "79SM",
+            # result of 4th encoding is `7tE6jdAHLe`, let"s block the prefix
+            "7tE6"
+          ]
+        )
+
+      assert Sqids.encode!(ctx, [1_000_000, 2_000_000]) === "1aYeB7bRUt"
+      assert Sqids.decode!(ctx, "1aYeB7bRUt") === [1_000_000, 2_000_000]
+    end
+
+    test "decoding blocklist words should still work" do
+      {:ok, ctx} = Sqids.new(blocklist: ["86Rf07", "se8ojk", "ARsz1p", "Q8AI49", "5sQRZO"])
+
+      assert Sqids.decode!(ctx, "86Rf07") === [1, 2, 3]
+      assert Sqids.decode!(ctx, "se8ojk") === [1, 2, 3]
+      assert Sqids.decode!(ctx, "ARsz1p") === [1, 2, 3]
+      assert Sqids.decode!(ctx, "Q8AI49") === [1, 2, 3]
+      assert Sqids.decode!(ctx, "5sQRZO") === [1, 2, 3]
+    end
+
+    test "match against a a short blocklist word" do
+      {:ok, ctx} = Sqids.new(blocklist: ["pnd"])
+
+      assert Sqids.decode!(ctx, Sqids.encode!(ctx, [1_000])) === [1_000]
+    end
+
+    test "blocklist filtering in new" do
+      {:ok, ctx} =
+        Sqids.new(
+          alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+          # lowercase blocklist in only-uppercase alphabet
+          blocklist: ["sxnzkl"]
+        )
+
+      id = Sqids.encode!(ctx, [1, 2, 3])
+      numbers = Sqids.decode!(ctx, id)
+
+      # without blocklist, would've been "SXNZKL"
+      assert id === "IBSHOZ"
+      assert numbers === [1, 2, 3]
+    end
+
+    test "max encoding attempts" do
+      alphabet = "abc"
+      min_length = 3
+      blocklist = ["cab", "abc", "bca"]
+
+      assert String.length(alphabet) === min_length
+      assert length(blocklist) === min_length
+      {:ok, ctx} = Sqids.new(alphabet: alphabet, min_length: min_length, blocklist: blocklist)
+
+      assert Sqids.encode(ctx, [0]) === {:error, {:reached_max_attempts_to_regenerate_the_id, 3}}
+    end
   end
 
   defmodule Encoding do
