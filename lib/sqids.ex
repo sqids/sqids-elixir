@@ -15,26 +15,22 @@ defmodule Sqids do
 
   ## Types
 
-  defmodule Ctx do
-    @moduledoc false
+  @type opts :: [
+          alphabet: String.t(),
+          min_length: non_neg_integer,
+          blocklist: Enumerable.t(String.t())
+        ]
 
-    @type opts :: [
-            alphabet: String.t(),
-            min_length: non_neg_integer,
-            blocklist: Enumerable.t(String.t())
-          ]
+  @enforce_keys [:alphabet, :min_length, :blocklist]
+  defstruct [:alphabet, :min_length, :blocklist]
 
-    @enforce_keys [:alphabet, :min_length, :blocklist]
-    defstruct [:alphabet, :min_length, :blocklist]
-
-    @type t :: %__MODULE__{
+  @opaque t :: %__MODULE__{
             alphabet: Alphabet.t(),
             # the minimum length IDs should be
             min_length: non_neg_integer,
-            # a list of words that shouldn't appear anywhere in the IDs
+            # words that shouldn't appear anywhere in the IDs
             blocklist: Sqids.Blocklist.t()
           }
-  end
 
   defmodule Blocklist do
     @moduledoc false
@@ -49,7 +45,7 @@ defmodule Sqids do
 
   ## API Functions
 
-  @spec new(Ctx.opts()) :: {:ok, Ctx.t()} | {:error, term}
+  @spec new(opts()) :: {:ok, t()} | {:error, term}
   def new(opts \\ []) do
     alphabet_str = opts[:alphabet] || @default_alphabet
     min_length = opts[:min_length] || @default_min_length
@@ -58,7 +54,7 @@ defmodule Sqids do
     with {:ok, shuffled_alphabet} <- Alphabet.new_shuffled(alphabet_str),
          :ok <- validate_min_length(min_length) do
       {:ok,
-       %Ctx{
+       %Sqids{
          alphabet: shuffled_alphabet,
          min_length: min_length,
          blocklist: new_blocklist(blocklist_words, alphabet_str)
@@ -69,34 +65,34 @@ defmodule Sqids do
     end
   end
 
-  @spec encode!(Ctx.t(), [non_neg_integer]) :: String.t()
-  def encode!(ctx, numbers) do
-    {:ok, string} = encode(ctx, numbers)
+  @spec encode!(t(), [non_neg_integer]) :: String.t()
+  def encode!(sqids, numbers) do
+    {:ok, string} = encode(sqids, numbers)
     string
   end
 
-  @spec encode(Ctx.t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
-  def encode(%Ctx{} = ctx, numbers) do
+  @spec encode(t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
+  def encode(%Sqids{} = sqids, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->
-        encode_numbers(ctx, numbers_list)
+        encode_numbers(sqids, numbers_list)
 
       {:error, _} = error ->
         error
     end
   end
 
-  @spec decode!(Ctx.t(), String.t()) :: [non_neg_integer]
-  def decode!(ctx, id) do
-    {:ok, numbers} = decode(ctx, id)
+  @spec decode!(t(), String.t()) :: [non_neg_integer]
+  def decode!(sqids, id) do
+    {:ok, numbers} = decode(sqids, id)
     numbers
   end
 
-  @spec decode(Ctx.t(), String.t()) :: {:ok, [non_neg_integer]} | {:error, term}
-  def decode(%Ctx{} = ctx, id) do
-    case validate_id(ctx, id) do
+  @spec decode(t(), String.t()) :: {:ok, [non_neg_integer]} | {:error, term}
+  def decode(%Sqids{} = sqids, id) do
+    case validate_id(sqids, id) do
       :ok ->
-        decode_valid_id(ctx, id)
+        decode_valid_id(sqids, id)
 
       :empty_id ->
         # If id is empty, return an empty list
@@ -188,23 +184,23 @@ defmodule Sqids do
   defp is_valid_number(number), do: is_integer(number) and number >= 0
 
   # if no numbers passed, return an empty string
-  defp encode_numbers(_ctx, [] = _list), do: {:ok, ""}
+  defp encode_numbers(_sqids, [] = _list), do: {:ok, ""}
 
-  defp encode_numbers(ctx, list) do
-    attempt_to_encode_numbers(ctx, list, _attempt_index = 0)
+  defp encode_numbers(sqids, list) do
+    attempt_to_encode_numbers(sqids, list, _attempt_index = 0)
   end
 
-  defp attempt_to_encode_numbers(ctx, list, attempt_index) do
-    if attempt_index > Alphabet.size(ctx.alphabet) do
+  defp attempt_to_encode_numbers(sqids, list, attempt_index) do
+    if attempt_index > Alphabet.size(sqids.alphabet) do
       # We've reached max attempts
       {:error, {:reached_max_attempts_to_regenerate_the_id, attempt_index - 1}}
     else
-      do_attempt_to_encode_numbers(ctx, list, attempt_index)
+      do_attempt_to_encode_numbers(sqids, list, attempt_index)
     end
   end
 
-  defp do_attempt_to_encode_numbers(ctx, list, attempt_index) do
-    alphabet = ctx.alphabet
+  defp do_attempt_to_encode_numbers(sqids, list, attempt_index) do
+    alphabet = sqids.alphabet
     alphabet_size = Alphabet.size(alphabet)
 
     alphabet_split_offset = get_semi_random_offset_from_input_numbers(list, alphabet, alphabet_size)
@@ -226,11 +222,11 @@ defmodule Sqids do
     # final ID will always have the `prefix` character at the beginning
     id_iodata = [id_prefix, id_iodata]
 
-    id = handle_min_length_requirement(id_iodata, alphabet, ctx.min_length)
+    id = handle_min_length_requirement(id_iodata, alphabet, sqids.min_length)
 
-    if is_blocked_id(ctx.blocklist, id) do
+    if is_blocked_id(sqids.blocklist, id) do
       # ID has a blocked word, restart with a +1 attempt_index
-      attempt_to_encode_numbers(ctx, list, attempt_index + 1)
+      attempt_to_encode_numbers(sqids, list, attempt_index + 1)
     else
       {:ok, id}
     end
@@ -341,17 +337,17 @@ defmodule Sqids do
 
   ## Internal Functions: Decoding
 
-  defp validate_id(_ctx, ""), do: :empty_id
+  defp validate_id(_sqids, ""), do: :empty_id
 
-  defp validate_id(ctx, id) when is_binary(id) do
-    if are_all_chars_in_id_known(id, ctx.alphabet) do
+  defp validate_id(sqids, id) when is_binary(id) do
+    if are_all_chars_in_id_known(id, sqids.alphabet) do
       :ok
     else
       :unknown_chars_in_id
     end
   end
 
-  defp validate_id(_ctx, not_a_string) do
+  defp validate_id(_sqids, not_a_string) do
     {:error, {:id_not_a_string, not_a_string}}
   end
 
@@ -359,8 +355,8 @@ defmodule Sqids do
     id |> String.graphemes() |> Enum.all?(&Alphabet.is_known_symbol(alphabet, &1))
   end
 
-  defp decode_valid_id(ctx, id) do
-    alphabet = ctx.alphabet
+  defp decode_valid_id(sqids, id) do
+    alphabet = sqids.alphabet
 
     # first character is always the `prefix`
     <<prefix, id::bytes>> = id

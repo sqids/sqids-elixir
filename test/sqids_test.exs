@@ -6,28 +6,28 @@ defmodule SqidsTest do
     use ExUnit.Case, async: true
 
     test "simple" do
-      {:ok, ctx} = Sqids.new(alphabet: "0123456789abcdef")
+      {:ok, sqids} = Sqids.new(alphabet: "0123456789abcdef")
 
       numbers = [1, 2, 3]
       id = "489158"
 
-      assert Sqids.encode!(ctx, numbers) === id
-      assert Sqids.decode!(ctx, id) === numbers
+      assert Sqids.encode!(sqids, numbers) === id
+      assert Sqids.decode!(sqids, id) === numbers
     end
 
     test "short alphabet" do
-      {:ok, ctx} = Sqids.new(alphabet: "abc")
+      {:ok, sqids} = Sqids.new(alphabet: "abc")
 
-      assert_encode_and_back(ctx, [1, 2, 3])
+      assert_encode_and_back(sqids, [1, 2, 3])
     end
 
     test "long alphabet" do
-      {:ok, ctx} =
+      {:ok, sqids} =
         Sqids.new(
           alphabet: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_+|{}[];:'\"/?.>,<`~"
         )
 
-      assert_encode_and_back(ctx, [1, 2, 3])
+      assert_encode_and_back(sqids, [1, 2, 3])
     end
 
     test "multibyte characters" do
@@ -42,8 +42,8 @@ defmodule SqidsTest do
       assert Sqids.new(alphabet: "ab") === {:error, {:alphabet_is_too_small, min_length: 3, alphabet: "ab"}}
     end
 
-    defp assert_encode_and_back(ctx, numbers) do
-      assert Sqids.decode!(ctx, Sqids.encode!(ctx, numbers)) === numbers
+    defp assert_encode_and_back(sqids, numbers) do
+      assert Sqids.decode!(sqids, Sqids.encode!(sqids, numbers)) === numbers
     end
   end
 
@@ -52,21 +52,21 @@ defmodule SqidsTest do
     use ExUnit.Case, async: true
 
     test "if no custom blocklist param, use the default blocklist" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
-      assert Sqids.decode!(ctx, "aho1e") === [4_572_721]
-      assert Sqids.encode!(ctx, [4_572_721]) === "JExTR"
+      assert Sqids.decode!(sqids, "aho1e") === [4_572_721]
+      assert Sqids.encode!(sqids, [4_572_721]) === "JExTR"
     end
 
     test "if an empty blocklist param passed, don't use any blocklist" do
-      {:ok, ctx} = Sqids.new(blocklist: [])
+      {:ok, sqids} = Sqids.new(blocklist: [])
 
-      assert Sqids.decode!(ctx, "aho1e") === [4_572_721]
-      assert Sqids.encode!(ctx, [4_572_721]) === "aho1e"
+      assert Sqids.decode!(sqids, "aho1e") === [4_572_721]
+      assert Sqids.encode!(sqids, [4_572_721]) === "aho1e"
     end
 
     test "if a non-empty blocklist param passed, use only that" do
-      {:ok, ctx} =
+      {:ok, sqids} =
         Sqids.new(
           blocklist: [
             # originally encoded [100_000]
@@ -75,17 +75,17 @@ defmodule SqidsTest do
         )
 
       # make sure we don't use the default blocklist
-      assert Sqids.decode!(ctx, "aho1e") === [4_572_721]
-      assert Sqids.encode!(ctx, [4_572_721]) === "aho1e"
+      assert Sqids.decode!(sqids, "aho1e") === [4_572_721]
+      assert Sqids.encode!(sqids, [4_572_721]) === "aho1e"
 
       # make sure we are using the passed blocklist
-      assert Sqids.decode!(ctx, "ArUO") === [100_000]
-      assert Sqids.encode!(ctx, [100_000]) === "QyG4"
-      assert Sqids.decode!(ctx, "QyG4") === [100_000]
+      assert Sqids.decode!(sqids, "ArUO") === [100_000]
+      assert Sqids.encode!(sqids, [100_000]) === "QyG4"
+      assert Sqids.decode!(sqids, "QyG4") === [100_000]
     end
 
     test "blocklist" do
-      {:ok, ctx} =
+      {:ok, sqids} =
         Sqids.new(
           blocklist: [
             # normal result of 1st encoding, let"s block that word on purpose
@@ -101,36 +101,36 @@ defmodule SqidsTest do
           ]
         )
 
-      assert Sqids.encode!(ctx, [1_000_000, 2_000_000]) === "1aYeB7bRUt"
-      assert Sqids.decode!(ctx, "1aYeB7bRUt") === [1_000_000, 2_000_000]
+      assert Sqids.encode!(sqids, [1_000_000, 2_000_000]) === "1aYeB7bRUt"
+      assert Sqids.decode!(sqids, "1aYeB7bRUt") === [1_000_000, 2_000_000]
     end
 
     test "decoding blocklist words should still work" do
-      {:ok, ctx} = Sqids.new(blocklist: ["86Rf07", "se8ojk", "ARsz1p", "Q8AI49", "5sQRZO"])
+      {:ok, sqids} = Sqids.new(blocklist: ["86Rf07", "se8ojk", "ARsz1p", "Q8AI49", "5sQRZO"])
 
-      assert Sqids.decode!(ctx, "86Rf07") === [1, 2, 3]
-      assert Sqids.decode!(ctx, "se8ojk") === [1, 2, 3]
-      assert Sqids.decode!(ctx, "ARsz1p") === [1, 2, 3]
-      assert Sqids.decode!(ctx, "Q8AI49") === [1, 2, 3]
-      assert Sqids.decode!(ctx, "5sQRZO") === [1, 2, 3]
+      assert Sqids.decode!(sqids, "86Rf07") === [1, 2, 3]
+      assert Sqids.decode!(sqids, "se8ojk") === [1, 2, 3]
+      assert Sqids.decode!(sqids, "ARsz1p") === [1, 2, 3]
+      assert Sqids.decode!(sqids, "Q8AI49") === [1, 2, 3]
+      assert Sqids.decode!(sqids, "5sQRZO") === [1, 2, 3]
     end
 
     test "match against a a short blocklist word" do
-      {:ok, ctx} = Sqids.new(blocklist: ["pnd"])
+      {:ok, sqids} = Sqids.new(blocklist: ["pnd"])
 
-      assert Sqids.decode!(ctx, Sqids.encode!(ctx, [1_000])) === [1_000]
+      assert Sqids.decode!(sqids, Sqids.encode!(sqids, [1_000])) === [1_000]
     end
 
     test "blocklist filtering in new" do
-      {:ok, ctx} =
+      {:ok, sqids} =
         Sqids.new(
           alphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
           # lowercase blocklist in only-uppercase alphabet
           blocklist: ["sxnzkl"]
         )
 
-      id = Sqids.encode!(ctx, [1, 2, 3])
-      numbers = Sqids.decode!(ctx, id)
+      id = Sqids.encode!(sqids, [1, 2, 3])
+      numbers = Sqids.decode!(sqids, id)
 
       # without blocklist, would've been "SXNZKL"
       assert id === "IBSHOZ"
@@ -144,9 +144,9 @@ defmodule SqidsTest do
 
       assert String.length(alphabet) === min_length
       assert length(blocklist) === min_length
-      {:ok, ctx} = Sqids.new(alphabet: alphabet, min_length: min_length, blocklist: blocklist)
+      {:ok, sqids} = Sqids.new(alphabet: alphabet, min_length: min_length, blocklist: blocklist)
 
-      assert Sqids.encode(ctx, [0]) === {:error, {:reached_max_attempts_to_regenerate_the_id, 3}}
+      assert Sqids.encode(sqids, [0]) === {:error, {:reached_max_attempts_to_regenerate_the_id, 3}}
     end
   end
 
@@ -160,24 +160,24 @@ defmodule SqidsTest do
     @max_uint1024 Bitwise.<<<(1, 1024) - 1
 
     test "simple" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
       numbers = [1, 2, 3]
       id = "86Rf07"
 
-      assert Sqids.encode!(ctx, numbers) === id
-      assert Sqids.decode!(ctx, id) === numbers
+      assert Sqids.encode!(sqids, numbers) === id
+      assert Sqids.decode!(sqids, id) === numbers
     end
 
     test "different inputs" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
       numbers = [0, 0, 0, 1, 2, 3, 100, 1_000, 100_000, 1_000_000, @js_max_safe_integer]
-      assert_encode_and_back(ctx, numbers)
+      assert_encode_and_back(sqids, numbers)
     end
 
     test "incremental numbers" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
       ids = %{
         "bM" => [0],
@@ -193,13 +193,13 @@ defmodule SqidsTest do
       }
 
       Enum.each(ids, fn {id, numbers} ->
-        assert Sqids.encode!(ctx, numbers) === id
-        assert Sqids.decode!(ctx, id) === numbers
+        assert Sqids.encode!(sqids, numbers) === id
+        assert Sqids.decode!(sqids, id) === numbers
       end)
     end
 
     test "incremental numbers, same index 0" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
       ids = %{
         "SvIz" => [0, 0],
@@ -215,13 +215,13 @@ defmodule SqidsTest do
       }
 
       Enum.each(ids, fn {id, numbers} ->
-        assert Sqids.encode!(ctx, numbers) === id
-        assert Sqids.decode!(ctx, id) === numbers
+        assert Sqids.encode!(sqids, numbers) === id
+        assert Sqids.decode!(sqids, id) === numbers
       end)
     end
 
     test "incremental numbers, same index 1" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
       ids = %{
         "SvIz" => [0, 0],
@@ -237,49 +237,49 @@ defmodule SqidsTest do
       }
 
       Enum.each(ids, fn {id, numbers} ->
-        assert Sqids.encode!(ctx, numbers) === id
-        assert Sqids.decode!(ctx, id) === numbers
+        assert Sqids.encode!(sqids, numbers) === id
+        assert Sqids.decode!(sqids, id) === numbers
       end)
     end
 
     test "multi input" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
       numbers = Enum.to_list(0..99)
 
-      assert_encode_and_back(ctx, numbers)
+      assert_encode_and_back(sqids, numbers)
     end
 
     test "encoding no numbers" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
-      assert Sqids.encode!(ctx, []) === ""
+      assert Sqids.encode!(sqids, []) === ""
     end
 
     test "decoding empty string" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
-      assert Sqids.decode!(ctx, "") === []
+      assert Sqids.decode!(sqids, "") === []
     end
 
     test "decoding an id with an invalid character" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
-      assert Sqids.decode!(ctx, "*") === []
+      assert Sqids.decode!(sqids, "*") === []
     end
 
     test "encoding bigints" do
-      {:ok, ctx} = Sqids.new()
+      {:ok, sqids} = Sqids.new()
 
-      assert_encode_and_back(ctx, [@max_uint128])
-      assert_encode_and_back(ctx, [@max_uint256])
-      assert_encode_and_back(ctx, [@max_uint1024])
-      assert_encode_and_back(ctx, [@max_uint256, @max_uint128, @max_uint1024])
-      assert_encode_and_back(ctx, [@max_uint1024, @max_uint256, @max_uint1024])
+      assert_encode_and_back(sqids, [@max_uint128])
+      assert_encode_and_back(sqids, [@max_uint256])
+      assert_encode_and_back(sqids, [@max_uint1024])
+      assert_encode_and_back(sqids, [@max_uint256, @max_uint128, @max_uint1024])
+      assert_encode_and_back(sqids, [@max_uint1024, @max_uint256, @max_uint1024])
     end
 
-    defp assert_encode_and_back(ctx, numbers) do
-      assert Sqids.decode!(ctx, Sqids.encode!(ctx, numbers)) === numbers
+    defp assert_encode_and_back(sqids, numbers) do
+      assert Sqids.decode!(sqids, Sqids.encode!(sqids, numbers)) === numbers
     end
   end
 
@@ -290,13 +290,13 @@ defmodule SqidsTest do
     @js_max_safe_integer Bitwise.<<<(1, 52) - 1
 
     test "simple" do
-      {:ok, ctx} = Sqids.new(min_length: String.length(Sqids.default_alphabet()))
+      {:ok, sqids} = Sqids.new(min_length: String.length(Sqids.default_alphabet()))
 
       numbers = [1, 2, 3]
       id = "86Rf07xd4zBmiJXQG6otHEbew02c3PWsUOLZxADhCpKj7aVFv9I8RquYrNlSTM"
 
-      assert Sqids.encode!(ctx, numbers) === id
-      assert Sqids.decode!(ctx, id) === numbers
+      assert Sqids.encode!(sqids, numbers) === id
+      assert Sqids.decode!(sqids, id) === numbers
     end
 
     test "incremental" do
@@ -319,17 +319,17 @@ defmodule SqidsTest do
           (default_alphabet_length + 3) => "86Rf07xd4zBmiJXQG6otHEbew02c3PWsUOLZxADhCpKj7aVFv9I8RquYrNlSTMyf1"
         },
         fn {min_length, id} ->
-          {:ok, ctx} = Sqids.new(min_length: min_length)
+          {:ok, sqids} = Sqids.new(min_length: min_length)
 
-          assert Sqids.encode!(ctx, numbers) === id
-          assert ctx |> Sqids.encode!(numbers) |> String.length() >= min_length
-          assert Sqids.decode!(ctx, id) === numbers
+          assert Sqids.encode!(sqids, numbers) === id
+          assert sqids |> Sqids.encode!(numbers) |> String.length() >= min_length
+          assert Sqids.decode!(sqids, id) === numbers
         end
       )
     end
 
     test "incremental numbers" do
-      {:ok, ctx} = Sqids.new(min_length: String.length(Sqids.default_alphabet()))
+      {:ok, sqids} = Sqids.new(min_length: String.length(Sqids.default_alphabet()))
 
       Enum.each(
         %{
@@ -345,8 +345,8 @@ defmodule SqidsTest do
           "moxr3HqLAK0GsTND6jowfZz3SUx7cQ8aC54Pl1RbIvFXmEJuBMYVeW9yrdOtin" => [0, 9]
         },
         fn {id, numbers} ->
-          assert Sqids.encode!(ctx, numbers) === id
-          assert Sqids.decode!(ctx, id) === numbers
+          assert Sqids.encode!(sqids, numbers) === id
+          assert Sqids.decode!(sqids, id) === numbers
         end
       )
     end
@@ -367,11 +367,11 @@ defmodule SqidsTest do
       for_result = for(min_length <- min_lengths, number <- numbers, do: {min_length, number})
 
       Enum.each(for_result, fn {min_length, number} ->
-        {:ok, ctx} = Sqids.new(min_length: min_length)
+        {:ok, sqids} = Sqids.new(min_length: min_length)
 
-        id = Sqids.encode!(ctx, number)
+        id = Sqids.encode!(sqids, number)
         assert String.length(id) >= min_length
-        assert Sqids.decode!(ctx, id) === number
+        assert Sqids.decode!(sqids, id) === number
       end)
     end
 
