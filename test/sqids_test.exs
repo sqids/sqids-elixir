@@ -59,6 +59,9 @@ defmodule SqidsTest do
     use ExUnit.Case, async: true
 
     @js_max_safe_integer Bitwise.<<<(1, 52) - 1
+    @max_uint128 Bitwise.<<<(1, 128) - 1
+    @max_uint256 Bitwise.<<<(1, 256) - 1
+    @max_uint1024 Bitwise.<<<(1, 1024) - 1
 
     test "simple" do
       {:ok, ctx} = Sqids.new()
@@ -169,8 +172,14 @@ defmodule SqidsTest do
       assert Sqids.decode!(ctx, "*") === []
     end
 
-    test "encoding out of range numbers" do
-      # TODO should this implementation limit numbers, given Erlang integers are bigints?
+    test "encoding bigints" do
+      {:ok, ctx} = Sqids.new()
+
+      assert_encode_and_back(ctx, [@max_uint128])
+      assert_encode_and_back(ctx, [@max_uint256])
+      assert_encode_and_back(ctx, [@max_uint1024])
+      assert_encode_and_back(ctx, [@max_uint256, @max_uint128, @max_uint1024])
+      assert_encode_and_back(ctx, [@max_uint1024, @max_uint256, @max_uint1024])
     end
 
     defp assert_encode_and_back(ctx, numbers) do
