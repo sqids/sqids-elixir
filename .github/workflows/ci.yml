@@ -1,0 +1,78 @@
+---
+name: Checks and Tests
+on:
+  push:
+  workflow_dispatch: # enables "click to run" button
+jobs:
+  ci:
+    name: >
+      Run checks and tests with Elixir ${{matrix.elixir_vsn}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        elixir_vsn: ['1.15']
+        os: ['ubuntu-20.04']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - id: elixir-version-to-otp-version
+        name: "Read %{Elixir version => OTP version} map"
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: ./.github/workflows/elixir_version_to_otp_version.json
+
+      - id: setup-beam
+        name: Setup BEAM
+        uses: erlef/setup-beam@v1
+        with:
+          # otp-version: https://stackoverflow.com/a/64405821
+          otp-version: |
+            ${{ fromJson(steps.elixir-version-to-otp-version.outputs.content)[matrix.elixir_vsn] }}
+          elixir-version: ${{matrix.elixir_vsn}}
+        env:
+          GITHUB_TOKEN: ${{github.token}}
+
+      - name: Set dynamic env (1)
+        run: |
+          echo "PREV_GITHUB_RUN_NR=$((${{github.run_number}} - 1))" >> "$GITHUB_ENV"
+          echo "BUILD_CACHE_PREFIX=_build-cache-for-os-${{runner.os}}-otp-${{matrix.otp_vsn}}-elixir-${{steps.setup-beam.outputs.elixir-version}}" >> "$GITHUB_ENV"
+
+      - name: Set dynamic env (2)
+        run: |
+          echo "BUILD_CACHE_PREFIX_WITH_HASH=${{env.BUILD_CACHE_PREFIX}}-hash-${{hashFiles('mix.lock')}}" >> "$GITHUB_ENV"
+
+      - name: Restore cached build artifacts
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            _build
+            deps
+          key: ${{env.BUILD_CACHE_PREFIX_WITH_HASH}}-${{env.PREV_GITHUB_RUN_NR}}
+          restore-keys: |
+            ${{env.BUILD_CACHE_PREFIX_WITH_HASH}}-
+            ${{env.BUILD_CACHE_PREFIX}}-
+
+      - name: Refresh dependencies
+        run: mix do deps.get, deps.clean --unused
+
+      - name: Assert code is formatted
+        run: mix format --check-formatted
+
+      - name: Run Credo
+        run: mix credo --strict
+
+      - name: Run tests
+        run: mix test --cover
+
+      - name: Run Dialyzer
+        run: mix dialyzer
+
+      - name: Save build artifacts to cache
+        if: always()
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            _build
+            deps
+          key: ${{env.BUILD_CACHE_PREFIX_WITH_HASH}}-${{github.run_number}}
