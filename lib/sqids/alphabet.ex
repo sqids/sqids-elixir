@@ -98,7 +98,7 @@ defmodule Sqids.Alphabet do
 
   @spec index_of!(t(), byte) :: index
   def index_of!(%{} = alphabet, char) do
-    # TODO optimize?
+    # It would be nice to optimize this.
     alphabet
     |> Enum.find_value(fn {index, byte} ->
       byte == char and index
