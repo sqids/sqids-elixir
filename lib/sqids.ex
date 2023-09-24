@@ -56,13 +56,13 @@ defmodule Sqids do
     end
   end
 
-  @spec encode!(t(), [non_neg_integer]) :: String.t()
+  @spec encode!(t(), Enumerable.t(non_neg_integer)) :: String.t()
   def encode!(sqids, numbers) do
     {:ok, string} = encode(sqids, numbers)
     string
   end
 
-  @spec encode(t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
+  @spec encode(t(), Enumerable.t(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
   def encode(%Sqids{} = sqids, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->
@@ -129,12 +129,15 @@ defmodule Sqids do
   defp is_valid_number(number), do: is_integer(number) and number >= 0
 
   # if no numbers passed, return an empty string
+  @spec encode_numbers(t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
   defp encode_numbers(_sqids, [] = _list), do: {:ok, ""}
 
   defp encode_numbers(sqids, list) do
     attempt_to_encode_numbers(sqids, list, _attempt_index = 0)
   end
 
+  @spec attempt_to_encode_numbers(t(), [non_neg_integer], non_neg_integer) ::
+          {:ok, String.t()} | {:error, term}
   defp attempt_to_encode_numbers(sqids, list, attempt_index) do
     if attempt_index > Alphabet.size(sqids.alphabet) do
       # We've reached max attempts
@@ -144,6 +147,8 @@ defmodule Sqids do
     end
   end
 
+  @spec do_attempt_to_encode_numbers(t(), [non_neg_integer], non_neg_integer) ::
+          {:ok, String.t()} | {:error, term}
   defp do_attempt_to_encode_numbers(sqids, list, attempt_index) do
     alphabet = sqids.alphabet
     alphabet_size = Alphabet.size(alphabet)
@@ -177,6 +182,8 @@ defmodule Sqids do
     end
   end
 
+  @spec get_semi_random_offset_from_input_numbers([non_neg_integer], Alphabet.t(), pos_integer) ::
+          non_neg_integer
   defp get_semi_random_offset_from_input_numbers(list, alphabet, alphabet_size) do
     list_length = length(list)
 
@@ -192,6 +199,7 @@ defmodule Sqids do
     )
   end
 
+  @spec encode_input_numbers([non_neg_integer], Alphabet.t()) :: {iodata(), Alphabet.t()}
   defp encode_input_numbers(list, alphabet) do
     encode_input_numbers_recur(list, alphabet, _acc = [])
   end
@@ -210,11 +218,13 @@ defmodule Sqids do
     end
   end
 
+  @spec encode_input_number(non_neg_integer, Alphabet.t()) :: [byte, ...]
   defp encode_input_number(input, alphabet) do
     alphabet_size_without_separator = Alphabet.size(alphabet) - 1
     encode_input_number_recur(input, alphabet, alphabet_size_without_separator, _acc = [])
   end
 
+  @spec encode_input_number_recur(non_neg_integer, Alphabet.t(), pos_integer, [byte]) :: [byte, ...]
   defp encode_input_number_recur(input, alphabet, alphabet_size_without_separator, acc) do
     if input !== 0 or acc === [] do
       input_remainder = rem(input, alphabet_size_without_separator)
@@ -227,6 +237,8 @@ defmodule Sqids do
     end
   end
 
+  @spec handle_min_length_requirement(iodata, Alphabet.t(), non_neg_integer) ::
+          String.t()
   defp handle_min_length_requirement(id_iodata, alphabet, min_length) do
     case IO.iodata_to_binary(id_iodata) do
       id when byte_size(id) >= min_length ->
@@ -244,6 +256,8 @@ defmodule Sqids do
     end
   end
 
+  @spec keep_appending_separator_while_needed(iodata, non_neg_integer, Alphabet.t(), pos_integer) ::
+          String.t()
   defp keep_appending_separator_while_needed(id_iodata, id_size, alphabet, min_length) do
     if id_size < min_length do
       alphabet = Alphabet.shuffle(alphabet)
@@ -282,6 +296,7 @@ defmodule Sqids do
     id |> String.graphemes() |> Enum.all?(&Alphabet.is_known_symbol(alphabet, &1))
   end
 
+  @spec decode_valid_id(t(), String.t()) :: {:ok, [non_neg_integer]}
   defp decode_valid_id(sqids, id) do
     alphabet = sqids.alphabet
 
@@ -300,6 +315,7 @@ defmodule Sqids do
     decode_valid_id_recur(id, alphabet, _acc = [])
   end
 
+  @spec decode_valid_id_recur(String.t(), Alphabet.t(), [non_neg_integer]) :: {:ok, [non_neg_integer]}
   defp decode_valid_id_recur("" = _id, _alphabet, acc) do
     finish_decoding_valid_id(acc)
   end
@@ -325,11 +341,13 @@ defmodule Sqids do
     end
   end
 
+  @spec decode_valid_id_chunk(String.t(), Alphabet.t()) :: non_neg_integer
   defp decode_valid_id_chunk(chunk, alphabet) do
     alphabet_size_without_separator = Alphabet.size(alphabet) - 1
     decode_valid_id_chunk_recur(chunk, alphabet, alphabet_size_without_separator, _acc = 0)
   end
 
+  @spec decode_valid_id_chunk_recur(String.t(), Alphabet.t(), pos_integer, non_neg_integer) :: non_neg_integer
   defp decode_valid_id_chunk_recur(chunk, alphabet, alphabet_size_without_separator, acc) do
     case chunk do
       <<char, chunk::bytes>> ->
@@ -342,6 +360,7 @@ defmodule Sqids do
     end
   end
 
+  @spec finish_decoding_valid_id([non_neg_integer]) :: {:ok, [non_neg_integer]}
   defp finish_decoding_valid_id(acc) do
     numbers = Enum.reverse(acc)
     {:ok, numbers}

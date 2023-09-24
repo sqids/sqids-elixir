@@ -49,6 +49,7 @@ defmodule Sqids.Blocklist do
 
   ## Internal Functions
 
+  @spec validate_words(term) :: :ok | {:error, term}
   defp validate_words(words) do
     Enum.filter(words, &(not is_binary(&1) or not String.valid?(&1)))
   catch
@@ -62,6 +63,7 @@ defmodule Sqids.Blocklist do
       {:error, {:invalid_words_in_blocklist, invalid_words}}
   end
 
+  @spec new_for_valid_words(Enumerable.t(String.t()), non_neg_integer, String.t()) :: t()
   defp new_for_valid_words(words, min_word_length, alphabet_str) do
     alphabet_graphemes_downcased = alphabet_str |> String.downcase() |> String.graphemes() |> MapSet.new()
     sort_fun = fn word -> {String.length(word), word} end
@@ -70,7 +72,7 @@ defmodule Sqids.Blocklist do
     |> Enum.uniq()
     |> Enum.reduce(
       _acc0 = %__MODULE__{min_word_length: min_word_length},
-      &maybe_new_blocklist_entry(&1, &2, alphabet_graphemes_downcased)
+      &maybe_add_blocklist_entry(&1, &2, alphabet_graphemes_downcased)
     )
     |> then(fn blocklist ->
       %{
@@ -81,7 +83,8 @@ defmodule Sqids.Blocklist do
     end)
   end
 
-  defp maybe_new_blocklist_entry(word, blocklist, alphabet_graphemes_downcased) do
+  @spec maybe_add_blocklist_entry(String.t(), t(), MapSet.t(String.grapheme())) :: t()
+  defp maybe_add_blocklist_entry(word, blocklist, alphabet_graphemes_downcased) do
     downcased_word = String.downcase(word)
     downcased_length = String.length(downcased_word)
 
