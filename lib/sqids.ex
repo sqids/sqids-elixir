@@ -9,6 +9,9 @@ defmodule Sqids do
   @default_alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
   @default_min_length 0
+
+  # TODO check if this works when importing Sqids as a depency - we might need
+  # to place the blacklist on Sqids's priv_dir.
   @default_blocklist_words "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
 
   @min_length_range 0..255
