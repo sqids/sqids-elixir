@@ -1,8 +1,13 @@
 ---
 name: Checks and Tests
+
 on:
   push:
   workflow_dispatch: # enables "click to run" button
+
+env:
+  HIGHEST_ELIXIR_VERSION_IN_MATRIX: '1.15'
+
 jobs:
   ci:
     name: >
@@ -63,9 +68,11 @@ jobs:
         run: mix do deps.get, deps.clean --unused
 
       - name: Assert code is formatted
+        if: ${{matrix.elixir_vsn == env.HIGHEST_ELIXIR_VERSION_IN_MATRIX}}
         run: mix format --check-formatted
 
       - name: Run Credo
+        if: ${{matrix.elixir_vsn == env.HIGHEST_ELIXIR_VERSION_IN_MATRIX}}
         run: mix credo --strict
 
       - name: Run tests
