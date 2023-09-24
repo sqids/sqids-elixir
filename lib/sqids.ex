@@ -87,11 +87,11 @@ defmodule Sqids do
         decode_valid_id(ctx, id)
 
       :empty_id ->
-        # if id is empty, return an empty list
+        # If id is empty, return an empty list
         {:ok, []}
 
       :unknown_chars_in_id ->
-        # TODO review, I think we should return an error
+        # Follow the spec's behaviour and return an empty list
         {:ok, []}
 
       {:error, _} = error ->
