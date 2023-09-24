@@ -19,8 +19,11 @@ defmodule Sqids do
   @type opts :: [
           alphabet: String.t(),
           min_length: non_neg_integer,
-          blocklist: Enumerable.t(String.t())
+          blocklist: enumerable(String.t())
         ]
+
+  # Enumerable.t/1 is available only on Elixir 1.14+
+  @type enumerable(t) :: [t] | term
 
   @enforce_keys [:alphabet, :min_length, :blocklist]
   defstruct [:alphabet, :min_length, :blocklist]
@@ -56,13 +59,13 @@ defmodule Sqids do
     end
   end
 
-  @spec encode!(t(), Enumerable.t(non_neg_integer)) :: String.t()
+  @spec encode!(t(), enumerable(non_neg_integer)) :: String.t()
   def encode!(sqids, numbers) do
     {:ok, string} = encode(sqids, numbers)
     string
   end
 
-  @spec encode(t(), Enumerable.t(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
+  @spec encode(t(), enumerable(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
   def encode(%Sqids{} = sqids, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->

@@ -63,7 +63,7 @@ defmodule Sqids.Blocklist do
       {:error, {:invalid_words_in_blocklist, invalid_words}}
   end
 
-  @spec new_for_valid_words(Enumerable.t(String.t()), non_neg_integer, String.t()) :: t()
+  @spec new_for_valid_words(Sqids.enumerable(String.t()), non_neg_integer, String.t()) :: t()
   defp new_for_valid_words(words, min_word_length, alphabet_str) do
     alphabet_graphemes_downcased = alphabet_str |> String.downcase() |> String.graphemes() |> MapSet.new()
     sort_fun = fn word -> {String.length(word), word} end
