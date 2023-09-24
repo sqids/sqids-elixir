@@ -46,7 +46,7 @@ jobs:
       - name: Set dynamic env (1)
         run: |
           echo "PREV_GITHUB_RUN_NR=$((${{github.run_number}} - 1))" >> "$GITHUB_ENV"
-          echo "BUILD_CACHE_PREFIX=_build-cache-for-os-${{runner.os}}-otp-${{matrix.otp_vsn}}-elixir-${{steps.setup-beam.outputs.elixir-version}}" >> "$GITHUB_ENV"
+          echo "BUILD_CACHE_PREFIX=build-cache-for-os-${{runner.os}}-elixir-${{steps.setup-beam.outputs.elixir-version}}-on-otp-${{steps.setup-beam.outputs.otp-version}}" >> "$GITHUB_ENV"
 
       - name: Set dynamic env (2)
         run: |
@@ -58,6 +58,9 @@ jobs:
           path: |
             _build
             deps
+          # Since the caching action doesn't support overwrite, we use a
+          # different key for every run while trying to restore cache using a
+          # previous run - this allows the cache to not stale.
           key: ${{env.BUILD_CACHE_PREFIX_WITH_HASH}}-${{env.PREV_GITHUB_RUN_NR}}
           restore-keys: |
             ${{env.BUILD_CACHE_PREFIX_WITH_HASH}}-
@@ -81,6 +84,8 @@ jobs:
         run: mix dialyzer
 
       - name: Save build artifacts to cache
+        # We always save to cache, even on failure, so that whatever artifacts
+        # took a long time to generate are kept (looking at you, Dialyzer PLT)
         if: always()
         uses: actions/cache/save@v3
         with:
