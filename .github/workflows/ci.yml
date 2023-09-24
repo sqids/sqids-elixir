@@ -16,7 +16,6 @@ jobs:
     strategy:
       matrix:
         elixir_vsn: [
-          '1.11',
           '1.12',
           '1.13',
           '1.14',
