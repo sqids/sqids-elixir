@@ -8,6 +8,8 @@ defmodule Sqids do
   # url-safe characters
   @default_alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   @default_min_length 0
+
+  @external_resource "blocklist/one_word_per_line.txt"
   @default_blocklist_words "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
 
   @min_length_range 0..255
