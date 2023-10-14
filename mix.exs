@@ -1,6 +1,8 @@
 defmodule Sqids.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/sqids/sqids-elixir"
+
   def project do
     [
       app: :sqids,
@@ -24,7 +26,8 @@ defmodule Sqids.MixProject do
           # FIXME
           threshold: 0
         ]
-      ]
+      ],
+      package: package()
     ]
   end
 
@@ -67,5 +70,13 @@ defmodule Sqids.MixProject do
     else
       ["lib"]
     end
+  end
+
+  defp package do
+    [
+      maintainers: ["Guilherme Andrade"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => @source_url}
+    ]
   end
 end
