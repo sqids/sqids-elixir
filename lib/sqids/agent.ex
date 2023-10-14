@@ -99,10 +99,13 @@ defmodule Sqids.Agent do
     # Use proc_lib:init_fail/2 instead of {:stop, reason} to avoid
     # polluting the logs: our supervisor will fail to start us and this
     # will already produce log messages with the relevant info.
-    :proc_lib.init_fail(error, {:exit, :normal})
+
+    # Use apply/3 to avoid compilation warnings on OTP 25 or older.
+    # credo:disable-for-next-line Credo.Check.Refactor.Apply
+    apply(:proc_lib, :init_fail, [error, {:exit, :normal}])
   catch
     :error, :undef ->
-      # Fallback for pre- OTP 26
+      # Fallback for OTP 25 or older
       server_name = server_name(sqids_module)
       Process.unregister(server_name)
       :proc_lib.init_ack(error)
