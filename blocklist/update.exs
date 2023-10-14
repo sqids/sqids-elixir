@@ -6,13 +6,12 @@ defmodule Sqids.BlocklistUpdater do
 
   require Logger
 
-  @canonical_path "blocklist/canonical.json"
+  @canonical_path "deps/sqids_blocklist/output/blocklist.json"
   @one_word_per_line_path "blocklist/one_word_per_line.txt"
 
   def run do
     install_script_deps()
     update_blocklist_repo()
-    generate_canonical_list()
     convert_from_canonical_list()
   end
 
@@ -25,19 +24,6 @@ defmodule Sqids.BlocklistUpdater do
   defp update_blocklist_repo do
     log_step("Updating blocklist repo...")
     :ok = run_cmd(~w(mix deps.update sqids_blocklist))
-  end
-
-  defp generate_canonical_list do
-    log_step("Generating canonical list...")
-
-    file = File.stream!(@canonical_path)
-
-    :ok =
-      run_cmd(
-        ~w(cargo run),
-        cd: "deps/sqids_blocklist",
-        into: file
-      )
   end
 
   defp convert_from_canonical_list do
@@ -63,19 +49,8 @@ defmodule Sqids.BlocklistUpdater do
     end)
   end
 
-  defp run_cmd([cmd | args], opts \\ []) when is_list(args) do
-    cd = opts[:cd]
-    into = opts[:into] || IO.stream(:stderr, :line)
-    stderr_to_stdout = !opts[:into]
-
-    cmd_opts = [into: into, stderr_to_stdout: stderr_to_stdout]
-
-    cmd_opts =
-      if cd do
-        cmd_opts ++ [cd: cd]
-      else
-        cmd_opts
-      end
+  defp run_cmd([cmd | args]) do
+    cmd_opts = [stderr_to_stdout: true]
 
     case System.cmd(cmd, args, cmd_opts) do
       {_, 0} ->
