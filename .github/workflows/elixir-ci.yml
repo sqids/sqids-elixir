@@ -18,7 +18,7 @@ env:
 jobs:
   ci:
     name: >
-      Run checks and tests with Elixir ${{matrix.elixir_vsn}}
+      Run CI with Elixir ${{matrix.elixir_vsn}}
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
