@@ -15,6 +15,9 @@ jobs:
     name: Check for updates to the default blocklist
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - id: elixir-version-to-otp-version
         name: "Read %{Elixir version => OTP version} map"
         uses: juliangruber/read-file-action@v1
