@@ -7,6 +7,9 @@ on:
 
   workflow_dispatch: # enables "click to run" button
 
+permissions:
+  contents: write
+
 env:
   ELIXIR_VERSION: 1.15
 
