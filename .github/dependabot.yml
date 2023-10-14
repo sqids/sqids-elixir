@@ -1,0 +1,7 @@
+version: 2
+updates:
+  - package-ecosystem: "mix"
+    schedule:
+      # Consider increasing frequency if Sqids ever gets dependencies that are
+      # not dev-only.
+      interval: "monthly"
