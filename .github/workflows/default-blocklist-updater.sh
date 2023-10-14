@@ -17,7 +17,6 @@ if [[ -z $(git status -s) ]]; then
     exit
 fi
 
-DATE=$(date -r tmp/cacerts.pem '+%Y/%m/%d') # linux-specific
 BLOCKLIST_REF=$(pushd deps/sqids_blocklist && git rev-parse --short HEAD)
 NEW_BRANCH=automation/default-blocklist-update/$BLOCKLIST_REF
 if git branch -a | grep "${NEW_BRANCH}" >/dev/null; then
