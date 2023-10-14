@@ -1,1 +1,1 @@
-ExUnit.start()
+ExUnit.start(slowest: 5)
