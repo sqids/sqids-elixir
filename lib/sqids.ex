@@ -29,7 +29,6 @@ defmodule Sqids do
   else
     @type enumerable(t) :: [t] | Enumerable.t()
   end
-  @type enumerable :: enumerable(term)
 
   @enforce_keys [:alphabet, :min_length, :blocklist]
   defstruct [:alphabet, :min_length, :blocklist]
