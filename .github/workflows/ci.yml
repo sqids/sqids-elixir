@@ -77,6 +77,15 @@ jobs:
         if: ${{matrix.elixir_vsn == env.HIGHEST_ELIXIR_VERSION_IN_MATRIX}}
         run: mix credo --strict
 
+      - name: Run markdownlint
+        if: ${{matrix.elixir_vsn == env.HIGHEST_ELIXIR_VERSION_IN_MATRIX}}
+        uses: articulate/actions-markdownlint@v1
+        with:
+          config: markdownlint-config.json
+          files: '**/*.md' '**/*.MD'
+          ignore: _build deps .git .github
+          # version: 0.28.1
+
       - name: Run tests
         run: mix test --cover
 
