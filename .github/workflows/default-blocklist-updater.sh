@@ -31,7 +31,7 @@ git add .
 git commit -a -m "${PR_TITLE}"
 git push "$REMOTE" "$NEW_BRANCH"
 
-PR_LABEL="default-blocklist-update"
+PR_LABEL="enhancement"
 if ! gh pr list --state open --label "$PR_LABEL" | grep "${PR_TITLE}" >/dev/null; then
     gh pr create --fill \
         --title "${PR_TITLE}" \
