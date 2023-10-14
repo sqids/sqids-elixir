@@ -81,7 +81,7 @@ jobs:
         run: mix test --cover
 
       - name: Run Dialyzer
-        run: mix dialyzer
+        run: MIX_ENV=test mix dialyzer
 
       - name: Save build artifacts to cache
         # We always save to cache, even on failure, so that whatever artifacts

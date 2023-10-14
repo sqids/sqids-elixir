@@ -8,6 +8,7 @@ defmodule Sqids.MixProject do
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: [
         warnings_as_errors: true
       ],
@@ -40,13 +41,21 @@ defmodule Sqids.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:credo, "~> 1.7", only: :dev, runtime: false},
-      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
-      {:recon, "~> 2.5", only: :dev, runtime: false},
+      {:recon, "~> 2.5", only: [:dev, :test], runtime: false},
       {:sqids_blocklist,
        github: "sqids/sqids-blocklist", branch: "main", only: :dev, runtime: false, app: false, compile: false},
       {:styler, "~> 0.8", only: [:dev, :test], runtime: false}
     ]
+  end
+
+  defp elixirc_paths(env) do
+    if env == :test do
+      ["lib", "test/extra"]
+    else
+      ["lib"]
+    end
   end
 end

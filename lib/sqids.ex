@@ -369,4 +369,45 @@ defmodule Sqids do
     numbers = Enum.reverse(acc)
     {:ok, numbers}
   end
+
+  ## Code generation
+
+  defmacro __using__([]) do
+    quote do
+      ## API
+
+      @spec start_link(Sqids.opts()) :: {:ok, pid} | {:error, term}
+      @doc """
+      Starts `Sqids.Agent` for #{__MODULE__}.
+      """
+      def start_link(opts) do
+        shared_state_init = {&Sqids.new/1, [opts]}
+        Sqids.Agent.start_link(__MODULE__, shared_state_init)
+      end
+
+      @spec encode!(Sqids.enumerable(non_neg_integer)) :: String.t()
+      def encode!(numbers) do
+        sqids = Sqids.Agent.get(__MODULE__)
+        Sqids.encode!(sqids, numbers)
+      end
+
+      @spec encode(Sqids.enumerable(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
+      def encode(numbers) do
+        sqids = Sqids.Agent.get(__MODULE__)
+        Sqids.encode(sqids, numbers)
+      end
+
+      @spec decode!(String.t()) :: [non_neg_integer]
+      def decode!(numbers) do
+        sqids = Sqids.Agent.get(__MODULE__)
+        Sqids.decode!(sqids, numbers)
+      end
+
+      @spec decode(String.t()) :: {:ok, [non_neg_integer]} | {:error, term}
+      def decode(numbers) do
+        sqids = Sqids.Agent.get(__MODULE__)
+        Sqids.decode(sqids, numbers)
+      end
+    end
+  end
 end
