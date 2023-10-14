@@ -1,10 +1,10 @@
 ---
-name: Elixir Checks and Tests
+name: CI
 
 on:
   push:
     paths:
-      - '.github/workflows/elixir-ci.yml'
+      - '.github/workflows/ci.yml'
       - 'blocklist/**'
       - 'lib/**'
       - 'mix.*'
