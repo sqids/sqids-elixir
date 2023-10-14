@@ -4,6 +4,7 @@ name: Elixir Checks and Tests
 on:
   push:
     paths:
+      - '.github/workflows/elixir-ci.yml'
       - 'blocklist/**'
       - 'lib/**'
       - 'mix.*'

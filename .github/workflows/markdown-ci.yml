@@ -4,8 +4,9 @@ name: Markdown Checks and Tests
 on:
   push:
     paths:
-      - '*.md'
       - '*.MD'
+      - '*.md'
+      - '.github/workflows/markdown-ci.yml'
 
   workflow_dispatch: # enables "click to run" button
 
