@@ -2,8 +2,9 @@
 name: Check for updates to default blocklist
 
 on:
-  schedule:
-    - cron: '23 10 * * 1-5'
+  ## FIXME we likely need additional permissions configured in repo or even org
+  # schedule:
+  #   - cron: '23 10 * * 1-5'
 
   workflow_dispatch: # enables "click to run" button
 
