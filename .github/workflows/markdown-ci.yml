@@ -1,0 +1,28 @@
+---
+name: Markdown Checks and Tests
+
+on:
+  push:
+    paths:
+      - '*.md'
+      - '*.MD'
+
+  workflow_dispatch: # enables "click to run" button
+
+jobs:
+  ci:
+    name: Run markdownlint-cli
+    steps:
+      - name: Run markdownlint
+        uses: articulate/actions-markdownlint@v1
+        with:
+          config: markdownlint-config.json
+          files: |
+            '**/*.md'
+            '**/*.MD'
+          ignore: |
+            _build
+            deps
+            .git
+            .github
+          # version: 0.28.1
