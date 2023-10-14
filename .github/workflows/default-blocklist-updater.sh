@@ -26,15 +26,14 @@ fi
 
 REMOTE=origin
 PR_TITLE="Update default blocklist to $BLOCKLIST_REF"
-git checkout -b "$BRANCH"
+git checkout -b "$NEW_BRANCH"
 git add .
 git commit -a -m "${PR_TITLE}"
-git push "$REMOTE" "$BRANCH"
+git push "$REMOTE" "$NEW_BRANCH"
 
 PR_LABEL="default-blocklist-update"
 if ! gh pr list --state open --label "$PR_LABEL" | grep "${PR_TITLE}" >/dev/null; then
     gh pr create --fill \
         --title "${PR_TITLE}" \
-        --label "${PR_LABEL}" \
-        --reviewer "g-andrade"
+        --label "${PR_LABEL}"
 fi
