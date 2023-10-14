@@ -17,7 +17,7 @@ if [[ -z $(git status -s) ]]; then
     exit
 fi
 
-BLOCKLIST_REF=$(pushd deps/sqids_blocklist && git rev-parse --short HEAD)
+BLOCKLIST_REF=$(pushd deps/sqids_blocklist 2>&1 1>/dev/null && git rev-parse --short HEAD)
 NEW_BRANCH=automation/default-blocklist-update/$BLOCKLIST_REF
 if git branch -a | grep "${NEW_BRANCH}" >/dev/null; then
     # branch already created
