@@ -72,10 +72,7 @@ defmodule Sqids.Agent do
         {:ok, state}
 
       {:error, _} = error ->
-        # Use proc_lib:init_fail/2 instead of {:stop, reason} to avoid
-        # polluting the logs: our supervisor will fail to start us and this
-        # will already produce log messages with the relevant info.
-        :proc_lib.init_fail(error, {:exit, :normal})
+        init_fail(error, sqids_module)
     end
   end
 
@@ -97,6 +94,20 @@ defmodule Sqids.Agent do
   end
 
   ## Internal
+
+  defp init_fail(error, sqids_module) do
+    # Use proc_lib:init_fail/2 instead of {:stop, reason} to avoid
+    # polluting the logs: our supervisor will fail to start us and this
+    # will already produce log messages with the relevant info.
+    :proc_lib.init_fail(error, {:exit, :normal})
+  catch
+    :error, :undef ->
+      # Fallback for pre- OTP 26
+      server_name = server_name(sqids_module)
+      Process.unregister(server_name)
+      :proc_lib.init_ack(error)
+      :erlang.exit(:normal)
+  end
 
   defp server_name(sqids_module) when is_atom(sqids_module) do
     String.to_atom("sqids.agent." <> Atom.to_string(sqids_module))
