@@ -24,7 +24,7 @@ defmodule Sqids do
         ]
 
   # Enumerable.t/1 is available only on Elixir 1.14+
-  if System.version() |> Version.match?("~> 1.14") do
+  if Version.match?(System.version(), "~> 1.14") do
     @type enumerable(t) :: Enumerable.t(t)
   else
     @type enumerable(t) :: [t] | Enumerable.t()
