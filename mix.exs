@@ -40,15 +40,25 @@ defmodule Sqids.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    [
+    elixir_version = String.split(System.version(), ".")
+
+    List.flatten([
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
       {:recon, "~> 2.5", only: [:dev, :test], runtime: false},
       {:sqids_blocklist,
        github: "sqids/sqids-blocklist", branch: "main", only: :dev, runtime: false, app: false, compile: false},
+      maybe_styler_dep(elixir_version)
+    ])
+  end
+
+  defp maybe_styler_dep(elixir_version) do
+    if elixir_version >= [1, 14] do
       {:styler, "~> 0.8", only: [:dev, :test], runtime: false}
-    ]
+    else
+      []
+    end
   end
 
   defp elixirc_paths(env) do
