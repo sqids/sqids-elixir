@@ -82,7 +82,9 @@ jobs:
         uses: articulate/actions-markdownlint@v1
         with:
           config: markdownlint-config.json
-          files: '**/*.md' '**/*.MD'
+          files: |
+            '**/*.md'
+            '**/*.MD'
           ignore: _build deps .git .github
           # version: 0.28.1
 
