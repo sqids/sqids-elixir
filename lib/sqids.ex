@@ -1,5 +1,5 @@
 defmodule Sqids do
-  @moduledoc false
+  @moduledoc "Sqids API"
   alias Sqids.Alphabet
   alias Sqids.Blocklist
 
@@ -35,11 +35,14 @@ defmodule Sqids do
             # the minimum length IDs should be
             min_length: non_neg_integer,
             # words that shouldn't appear anywhere in the IDs
-            blocklist: Sqids.Blocklist.t()
+            blocklist: Blocklist.t()
           }
 
   ## API Functions
 
+  @doc """
+  Validates arguments and creates a context used for both encoding and decoding.
+  """
   @spec new(opts()) :: {:ok, t()} | {:error, term}
   def new(opts \\ []) do
     alphabet_str = opts[:alphabet] || @default_alphabet
@@ -70,7 +73,12 @@ defmodule Sqids do
     end
   end
 
-  @spec encode!(t(), enumerable(non_neg_integer)) :: String.t()
+  @doc """
+  Encodes zero or more `numbers` into an `id`, according to `sqids`s alphabet,
+  blocklist, and minimum length. Raises in case of error.
+  """
+  @spec encode!(sqids, numbers) :: id
+        when sqids: t(), numbers: enumerable(non_neg_integer), id: String.t()
   def encode!(sqids, numbers) do
     case encode(sqids, numbers) do
       {:ok, string} ->
@@ -81,7 +89,12 @@ defmodule Sqids do
     end
   end
 
-  @spec encode(t(), enumerable(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
+  @doc """
+  Tries to encode zero or more `numbers` into as an `id`, according to `sqids`s
+  alphabet, blocklist, and minimum length. Returns an error otherwise.
+  """
+  @spec encode(sqids, numbers) :: {:ok, id} | {:error, term}
+        when sqids: t(), numbers: enumerable(non_neg_integer), id: String.t()
   def encode(%Sqids{} = sqids, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->
@@ -94,7 +107,15 @@ defmodule Sqids do
 
   def encode(sqids, _numbers), do: :erlang.error({:badarg, sqids})
 
-  @spec decode!(t(), String.t()) :: [non_neg_integer]
+  @doc """
+  Decodes an `id` into zero or more `numbers` according to `sqids`s alphabet.
+
+  Like in the [reference implementation](https://github.com/sqids/sqids-spec),
+  the presence of unknown characters within `id` will result in an empty list
+  being returned.
+  """
+  @spec decode!(sqids, id) :: numbers
+        when sqids: t(), id: String.t(), numbers: [non_neg_integer]
   def decode!(sqids, id) do
     case decode(sqids, id) do
       {:ok, numbers} ->
@@ -104,28 +125,6 @@ defmodule Sqids do
         #   raise error_reason_to_string(reason)
     end
   end
-
-  # | {:error, term}
-  @spec decode(t(), String.t()) :: {:ok, [non_neg_integer]}
-  def decode(%Sqids{} = sqids, id) do
-    case validate_id(sqids, id) do
-      :ok ->
-        decode_valid_id(sqids, id)
-
-      :empty_id ->
-        # If id is empty, return an empty list
-        {:ok, []}
-
-      :unknown_chars_in_id ->
-        # Follow the spec's behaviour and return an empty list
-        {:ok, []}
-
-      {:error, {tag, _} = reason} when tag in [:id_is_not_utf8, :id_is_not_a_string] ->
-        raise %ArgumentError{message: error_reason_to_string(reason)}
-    end
-  end
-
-  def decode(sqids, _id), do: :erlang.error({:badarg, sqids})
 
   ## Internal Functions
 
@@ -340,6 +339,27 @@ defmodule Sqids do
     id |> String.graphemes() |> Enum.all?(&Alphabet.is_known_symbol(alphabet, &1))
   end
 
+  @spec decode(t(), String.t()) :: {:ok, [non_neg_integer]}
+  defp decode(%Sqids{} = sqids, id) do
+    case validate_id(sqids, id) do
+      :ok ->
+        decode_valid_id(sqids, id)
+
+      :empty_id ->
+        # If id is empty, return an empty list
+        {:ok, []}
+
+      :unknown_chars_in_id ->
+        # Follow the spec's behaviour and return an empty list
+        {:ok, []}
+
+      {:error, {tag, _} = reason} when tag in [:id_is_not_utf8, :id_is_not_a_string] ->
+        raise %ArgumentError{message: error_reason_to_string(reason)}
+    end
+  end
+
+  defp decode(sqids, _id), do: :erlang.error({:badarg, sqids})
+
   @spec decode_valid_id(t(), String.t()) :: {:ok, [non_neg_integer]}
   defp decode_valid_id(sqids, id) do
     alphabet = sqids.alphabet
@@ -426,6 +446,15 @@ defmodule Sqids do
     quote do
       ## API
 
+      @spec child_spec(Sqids.opts()) :: Supervisor.child_spec()
+      @doc """
+      Returns Supervisor child spec for #{__MODULE__}.
+      """
+      def child_spec(opts) do
+        mfa = {__MODULE__, :start_link, [opts]}
+        Sqids.Agent.child_spec(mfa)
+      end
+
       @spec start_link(Sqids.opts()) :: {:ok, pid} | {:error, term}
       @doc """
       Starts `Sqids.Agent` for #{__MODULE__}.
@@ -435,28 +464,37 @@ defmodule Sqids do
         Sqids.Agent.start_link(__MODULE__, shared_state_init)
       end
 
-      @spec encode!(Sqids.enumerable(non_neg_integer)) :: String.t()
+      @doc """
+      Encodes `numbers` into an `id`, according to `#{__MODULE__}`s alphabet,
+      blocklist, and minimum length. Raises in case of error.
+      """
+      @spec encode!(numbers) :: id
+            when numbers: Sqids.enumerable(non_neg_integer), id: String.t()
       def encode!(numbers) do
         sqids = Sqids.Agent.get(__MODULE__)
         Sqids.encode!(sqids, numbers)
       end
 
-      @spec encode(Sqids.enumerable(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
+      @doc """
+      Tries to encode `numbers` into an `id`, according to `#{__MODULE__}`s
+      alphabet, blocklist, and minimum length. Returns an error otherwise.
+      """
+      @spec encode(numbers) :: {:ok, id} | {:error, term}
+            when numbers: Sqids.enumerable(non_neg_integer), id: String.t()
       def encode(numbers) do
         sqids = Sqids.Agent.get(__MODULE__)
         Sqids.encode(sqids, numbers)
       end
 
-      @spec decode!(String.t()) :: [non_neg_integer]
+      @doc """
+      Decodes an `id` into zero or more `numbers`, according to
+      `#{__MODULE__}`s alphabet.
+      """
+      @spec decode!(id) :: numbers
+            when id: String.t(), numbers: [non_neg_integer]
       def decode!(numbers) do
         sqids = Sqids.Agent.get(__MODULE__)
         Sqids.decode!(sqids, numbers)
-      end
-
-      @spec decode(String.t()) :: {:ok, [non_neg_integer]} | {:error, term}
-      def decode(numbers) do
-        sqids = Sqids.Agent.get(__MODULE__)
-        Sqids.decode(sqids, numbers)
       end
     end
   end

@@ -51,10 +51,6 @@ defmodule SqidsTest do
       call_instance_fun(instance, :decode!, [id])
     end
 
-    def decode(instance, id) do
-      call_instance_fun(instance, :decode, [id])
-    end
-
     def assert_encode_and_back(sqids, numbers) do
       import ExUnit.Assertions
       assert decode!(sqids, encode!(sqids, numbers)) === numbers
@@ -492,6 +488,7 @@ defmodule SqidsTest do
         assert_raise ArgumentError, "Alphabet is not an utf8 string: [3]", fn -> new_sqids(at, alphabet: input) end
 
         input = ~c"abcdf"
+
         assert_raise ArgumentError, ~r/Alphabet is not an utf8 string: .+/, fn ->
           new_sqids(at, alphabet: input)
         end
@@ -636,17 +633,6 @@ defmodule SqidsTest do
 
     import SqidsTest.Shared
 
-    test "decode/2: invalid sqids" do
-      sqids = :no
-      assert_raise ArgumentError, "argument error: :no", fn -> Sqids.decode(sqids, "0") end
-
-      sqids = %{a: 55}
-      assert_raise ArgumentError, "argument error: %{a: 55}", fn -> Sqids.decode(sqids, "0") end
-
-      sqids = %{__struct__: No}
-      assert_raise ArgumentError, "argument error: %{__struct__: No}", fn -> Sqids.decode(sqids, "0") end
-    end
-
     test "decode!/2: invalid sqids" do
       sqids = :no
       assert_raise ArgumentError, "argument error: :no", fn -> Sqids.decode!(sqids, "0") end
@@ -672,22 +658,6 @@ defmodule SqidsTest do
         assert_raise ArgumentError, "Id is not utf8: <<48, 48, 48, 48, 128>>", fn -> decode!(instance, input) end
       end
 
-      test "#{access_type}: decode/2: id has unknown chars" do
-        {:ok, instance} = new_sqids(unquote(access_type), alphabet: "01234")
-
-        input = "5"
-        assert decode(instance, input) === {:ok, []}
-
-        input = "011015"
-        assert decode(instance, input) === {:ok, []}
-
-        input = "011015143"
-        assert decode(instance, input) === {:ok, []}
-
-        input = "000ë5"
-        assert decode(instance, input) === {:ok, []}
-      end
-
       test "#{access_type}: decode!/2: id has unknown chars" do
         {:ok, instance} = new_sqids(unquote(access_type), alphabet: "01234")
 
@@ -705,4 +675,11 @@ defmodule SqidsTest do
       end
     end
   end
+end
+
+defmodule Example do
+  @moduledoc false
+  use ExUnit.Case
+
+  doctest_file("README.md")
 end

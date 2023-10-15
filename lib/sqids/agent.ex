@@ -25,6 +25,16 @@ defmodule Sqids.Agent do
   ## API
 
   @doc false
+  @spec child_spec(mfa) :: Supervisor.child_spec()
+  def child_spec(mfa) do
+    %{
+      id: __MODULE__,
+      start: mfa,
+      modules: [__MODULE__]
+    }
+  end
+
+  @doc false
   @spec start_link(module, shared_state_init) :: {:ok, pid} | {:error, term}
   def start_link(sqids_module, shared_state_init) do
     init_args = [

@@ -15,10 +15,11 @@ defmodule Sqids.MixProject do
         warnings_as_errors: true
       ],
       docs: [
-        main: "Sqids",
+        main: "readme",
         extras: [
           "CHANGELOG.md",
-          "LICENSE"
+          "LICENSE",
+          "README.md"
         ]
       ],
       test_coverage: [
