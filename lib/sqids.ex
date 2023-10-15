@@ -56,6 +56,15 @@ defmodule Sqids do
          blocklist: blocklist
        }}
     else
+      {:error, {tag, _} = reason}
+      when tag in [
+             :alphabet_is_not_an_utf8_string,
+             :min_length_is_not_an_integer_in_range,
+             :blocklist_is_not_enumerable,
+             :some_words_in_blocklist_are_not_utf8_strings
+           ] ->
+        raise %ArgumentError{message: error_reason_to_string(reason)}
+
       {:error, _} = error ->
         error
     end
@@ -63,8 +72,13 @@ defmodule Sqids do
 
   @spec encode!(t(), enumerable(non_neg_integer)) :: String.t()
   def encode!(sqids, numbers) do
-    {:ok, string} = encode(sqids, numbers)
-    string
+    case encode(sqids, numbers) do
+      {:ok, string} ->
+        string
+
+      {:error, {:all_id_generation_attempts_were_censored, _nr_of_attempts} = reason} ->
+        raise error_reason_to_string(reason)
+    end
   end
 
   @spec encode(t(), enumerable(non_neg_integer)) :: {:ok, String.t()} | {:error, term}
@@ -73,18 +87,26 @@ defmodule Sqids do
       {:ok, numbers_list} ->
         encode_numbers(sqids, numbers_list)
 
-      {:error, _} = error ->
-        error
+      {:error, reason} ->
+        raise %ArgumentError{message: error_reason_to_string(reason)}
     end
   end
 
+  def encode(sqids, _numbers), do: :erlang.error({:badarg, sqids})
+
   @spec decode!(t(), String.t()) :: [non_neg_integer]
   def decode!(sqids, id) do
-    {:ok, numbers} = decode(sqids, id)
-    numbers
+    case decode(sqids, id) do
+      {:ok, numbers} ->
+        numbers
+
+        # {:error, reason} ->
+        #   raise error_reason_to_string(reason)
+    end
   end
 
-  @spec decode(t(), String.t()) :: {:ok, [non_neg_integer]} | {:error, term}
+  # | {:error, term}
+  @spec decode(t(), String.t()) :: {:ok, [non_neg_integer]}
   def decode(%Sqids{} = sqids, id) do
     case validate_id(sqids, id) do
       :ok ->
@@ -98,10 +120,12 @@ defmodule Sqids do
         # Follow the spec's behaviour and return an empty list
         {:ok, []}
 
-      {:error, _} = error ->
-        error
+      {:error, {tag, _} = reason} when tag in [:id_is_not_utf8, :id_is_not_a_string] ->
+        raise %ArgumentError{message: error_reason_to_string(reason)}
     end
   end
+
+  def decode(sqids, _id), do: :erlang.error({:badarg, sqids})
 
   ## Internal Functions
 
@@ -110,7 +134,7 @@ defmodule Sqids do
 
   defp validate_min_length(min_length) do
     if not is_integer(min_length) or min_length not in @min_length_range do
-      {:error, {:min_length_not_an_integer_in_range, min_length, range: @min_length_range}}
+      {:error, {:min_length_is_not_an_integer_in_range, value: min_length, range: @min_length_range}}
     else
       :ok
     end
@@ -128,16 +152,17 @@ defmodule Sqids do
   end
 
   defp validate_numbers(numbers) do
-    numbers
-    |> Enum.find(&(not is_valid_number(&1)))
-    |> case do
-      nil ->
-        numbers_list = Enum.to_list(numbers)
-        {:ok, numbers_list}
+    Enum.find(numbers, &(not is_valid_number(&1)))
+  catch
+    :error, %Protocol.UndefinedError{value: ^numbers} ->
+      {:error, {:numbers_not_enumerable, numbers}}
+  else
+    nil ->
+      numbers_list = Enum.to_list(numbers)
+      {:ok, numbers_list}
 
-      invalid_number ->
-        {:error, {:number_must_be_a_non_negative_integer, invalid_number}}
-    end
+    invalid_number ->
+      {:error, {:number_is_not_a_non_negative_integer, invalid_number}}
   end
 
   defp is_valid_number(number), do: is_integer(number) and number >= 0
@@ -155,7 +180,7 @@ defmodule Sqids do
   defp attempt_to_encode_numbers(sqids, list, attempt_index) do
     if attempt_index > Alphabet.size(sqids.alphabet) do
       # We've reached max attempts
-      {:error, {:reached_max_attempts_to_regenerate_the_id, attempt_index - 1}}
+      {:error, {:all_id_generation_attempts_were_censored, _nr_of_attempts = attempt_index - 1}}
     else
       do_attempt_to_encode_numbers(sqids, list, attempt_index)
     end
@@ -295,15 +320,20 @@ defmodule Sqids do
   defp validate_id(_sqids, ""), do: :empty_id
 
   defp validate_id(sqids, id) when is_binary(id) do
-    if are_all_chars_in_id_known(id, sqids.alphabet) do
-      :ok
-    else
-      :unknown_chars_in_id
+    case String.valid?(id) and {:all_chars_known, are_all_chars_in_id_known(id, sqids.alphabet)} do
+      {:all_chars_known, true} ->
+        :ok
+
+      {:all_chars_known, false} ->
+        :unknown_chars_in_id
+
+      false ->
+        {:error, {:id_is_not_utf8, id}}
     end
   end
 
   defp validate_id(_sqids, not_a_string) do
-    {:error, {:id_not_a_string, not_a_string}}
+    {:error, {:id_is_not_a_string, not_a_string}}
   end
 
   defp are_all_chars_in_id_known(id, alphabet) do
@@ -378,6 +408,16 @@ defmodule Sqids do
   defp finish_decoding_valid_id(acc) do
     numbers = Enum.reverse(acc)
     {:ok, numbers}
+  end
+
+  defp error_reason_to_string({tag, details}) when is_atom(tag) do
+    "#{prettify_error_tag(tag)}: #{inspect(details)}"
+  end
+
+  defp prettify_error_tag(tag) do
+    [first_word | next_words] = tag |> Atom.to_string() |> String.split("_")
+    first_word = String.capitalize(first_word)
+    Enum.join([first_word | next_words], " ")
   end
 
   ## Code generation

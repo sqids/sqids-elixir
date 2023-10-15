@@ -1,7 +1,7 @@
 defmodule Sqids.Agent do
   @moduledoc """
-  Storage for `Sqids` shared state. 
-  Like stdlib's [Agent](https://hexdocs.pm/elixir/1.15/Agent.html) but using 
+  Storage for `Sqids` shared state.
+  Like stdlib's [Agent](https://hexdocs.pm/elixir/1.15/Agent.html) but using
   OTP's [`persistent_term`](https://www.erlang.org/doc/man/persistent_term).
   """
 
@@ -32,8 +32,16 @@ defmodule Sqids.Agent do
       shared_state_init: shared_state_init
     ]
 
-    server_name = server_name(sqids_module)
-    GenServer.start_link(__MODULE__, init_args, name: server_name)
+    case :proc_lib.start_link(__MODULE__, :proc_lib_init, [init_args]) do
+      {:ok, _} = success ->
+        success
+
+      {:error, _} = error ->
+        error
+
+      {:intentional_raise, reason, stacktrace} ->
+        :erlang.raise(:error, reason, stacktrace)
+    end
   end
 
   @doc false
@@ -55,25 +63,27 @@ defmodule Sqids.Agent do
   ## GenServer callbacks
 
   @doc false
-  @impl true
-  @spec init(init_args) :: {:ok, state} | no_return()
-  def init(init_args) do
+  @spec proc_lib_init(init_args) :: no_return()
+  def proc_lib_init(init_args) do
     sqids_module = Keyword.fetch!(init_args, :sqids_module)
-    {shared_state_init_fun, shared_state_args} = Keyword.fetch!(init_args, :shared_state_init)
+    server_name = server_name(sqids_module)
 
-    case apply(shared_state_init_fun, shared_state_args) do
-      {:ok, shared_state} ->
-        # Ensure `:terminate/2` gets called unless we're killed
-        _ = Process.flag(:trap_exit, true)
-
-        shared_state_key = shared_state_key(sqids_module)
-        :persistent_term.put(shared_state_key, shared_state)
-        state = state(shared_state_key: shared_state_key)
-        {:ok, state}
-
-      {:error, _} = error ->
-        init_fail(error, sqids_module)
+    try do
+      Process.register(self(), server_name)
+    catch
+      :error, %ArgumentError{} when is_atom(server_name) ->
+        init_fail({:error, {:already_started, Process.whereis(server_name)}}, server_name)
+    else
+      true ->
+        proc_lib_init_registered(init_args, sqids_module, server_name)
     end
+  end
+
+  @doc false
+  @impl true
+  @spec init(term) :: no_return()
+  def init(_init_args) do
+    raise "Initialization is done through :proc_lib_init/1"
   end
 
   @doc false
@@ -95,7 +105,39 @@ defmodule Sqids.Agent do
 
   ## Internal
 
-  defp init_fail(error, sqids_module) do
+  defp proc_lib_init_registered(init_args, sqids_module, server_name) do
+    {shared_state_init_fun, shared_state_args} = Keyword.fetch!(init_args, :shared_state_init)
+
+    try do
+      apply(shared_state_init_fun, shared_state_args)
+    catch
+      :error, %ArgumentError{} = reason ->
+        stacktrace = __STACKTRACE__
+        init_fail({:intentional_raise, reason, stacktrace}, server_name)
+    else
+      {:ok, shared_state} ->
+        # Ensure `:terminate/2` gets called unless we're killed
+        _ = Process.flag(:trap_exit, true)
+
+        shared_state_key = shared_state_key(sqids_module)
+        :persistent_term.put(shared_state_key, shared_state)
+        state = state(shared_state_key: shared_state_key)
+        :proc_lib.init_ack({:ok, self()})
+
+        :gen_server.enter_loop(
+          __MODULE__,
+          _enter_loop_opts = [],
+          state,
+          {:local, server_name},
+          :hibernate
+        )
+
+      {:error, _} = error ->
+        init_fail(error, server_name)
+    end
+  end
+
+  defp init_fail(error, server_name) do
     # Use proc_lib:init_fail/2 instead of {:stop, reason} to avoid
     # polluting the logs: our supervisor will fail to start us and this
     # will already produce log messages with the relevant info.
@@ -106,7 +148,6 @@ defmodule Sqids.Agent do
   catch
     :error, :undef ->
       # Fallback for OTP 25 or older
-      server_name = server_name(sqids_module)
       Process.unregister(server_name)
       :proc_lib.init_ack(error)
       :erlang.exit(:normal)

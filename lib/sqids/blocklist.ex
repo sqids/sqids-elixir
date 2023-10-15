@@ -14,9 +14,13 @@ defmodule Sqids.Blocklist do
             matches_anywhere: [String.t()]
           }
 
+  @type new_error_reason ::
+          {:blocklist_is_not_enumerable, term}
+          | {:some_words_in_blocklist_are_not_utf8_strings, [term, ...]}
+
   ## API Functions
 
-  @spec new(term, non_neg_integer, String.t()) :: {:ok, t()} | {:error, term}
+  @spec new(term, non_neg_integer, String.t()) :: {:ok, t()} | {:error, new_error_reason}
   def new(words, min_word_length, alphabet_str) do
     case validate_words(words) do
       :ok ->
@@ -53,14 +57,14 @@ defmodule Sqids.Blocklist do
   defp validate_words(words) do
     Enum.filter(words, &(not is_binary(&1) or not String.valid?(&1)))
   catch
-    :error, _ ->
-      {:error, {:invalid_blocklist, words}}
+    :error, %Protocol.UndefinedError{value: ^words} ->
+      {:error, {:blocklist_is_not_enumerable, words}}
   else
     [] ->
       :ok
 
     invalid_words ->
-      {:error, {:invalid_words_in_blocklist, invalid_words}}
+      {:error, {:some_words_in_blocklist_are_not_utf8_strings, invalid_words}}
   end
 
   @spec new_for_valid_words(Sqids.enumerable(String.t()), non_neg_integer, String.t()) :: t()

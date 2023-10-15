@@ -23,7 +23,7 @@ defmodule Sqids.MixProject do
       ],
       test_coverage: [
         summary: [
-          threshold: 90
+          threshold: 95
         ]
       ],
       package: package()

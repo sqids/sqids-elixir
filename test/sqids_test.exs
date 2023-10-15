@@ -51,6 +51,10 @@ defmodule SqidsTest do
       call_instance_fun(instance, :decode!, [id])
     end
 
+    def decode(instance, id) do
+      call_instance_fun(instance, :decode, [id])
+    end
+
     def assert_encode_and_back(sqids, numbers) do
       import ExUnit.Assertions
       assert decode!(sqids, encode!(sqids, numbers)) === numbers
@@ -222,7 +226,9 @@ defmodule SqidsTest do
         {:ok, instance} =
           new_sqids(unquote(access_type), alphabet: alphabet, min_length: min_length, blocklist: blocklist)
 
-        assert encode(instance, [0]) === {:error, {:reached_max_attempts_to_regenerate_the_id, 3}}
+        input = [0]
+        assert encode(instance, input) === {:error, {:all_id_generation_attempts_were_censored, 3}}
+        assert_raise RuntimeError, "All id generation attempts were censored: 3", fn -> encode!(instance, input) end
       end
     end
   end
@@ -457,14 +463,259 @@ defmodule SqidsTest do
 
       # for those langs that don't support `u8`
       test "#{access_type}: out-of-range invalid min length" do
-        assert new_sqids(unquote(access_type), min_length: -1) ==
-                 {:error, {:min_length_not_an_integer_in_range, -1, range: 0..255}}
+        assert_raise ArgumentError, "Min length is not an integer in range: [value: -1, range: 0..255]", fn ->
+          new_sqids(unquote(access_type), min_length: -1)
+        end
 
-        assert new_sqids(unquote(access_type), min_length: 256) ==
-                 {:error, {:min_length_not_an_integer_in_range, 256, range: 0..255}}
+        assert_raise ArgumentError, "Min length is not an integer in range: [value: 256, range: 0..255]", fn ->
+          new_sqids(unquote(access_type), min_length: 256)
+        end
 
-        assert new_sqids(unquote(access_type), min_length: "1") ==
-                 {:error, {:min_length_not_an_integer_in_range, "1", range: 0..255}}
+        assert_raise ArgumentError, "Min length is not an integer in range: [value: \"1\", range: 0..255]", fn ->
+          new_sqids(unquote(access_type), min_length: "1")
+        end
+      end
+    end
+  end
+
+  defmodule AdditionalInstantiationScenarios do
+    @moduledoc false
+    use ExUnit.Case, async: true
+
+    import SqidsTest.Shared
+
+    for access_type <- [:"Direct API", :"Using module"] do
+      test "#{access_type}: new/2: alphabet is not an UTF-8 string" do
+        at = unquote(access_type)
+
+        input = [3]
+        assert_raise ArgumentError, "Alphabet is not an utf8 string: [3]", fn -> new_sqids(at, alphabet: input) end
+
+        input = ~c"abcdf"
+
+        assert_raise ArgumentError, "Alphabet is not an utf8 string: ~c\"abcdf\"", fn ->
+          new_sqids(at, alphabet: input)
+        end
+
+        input = <<128>>
+        assert_raise ArgumentError, "Alphabet is not an utf8 string: <<128>>", fn -> new_sqids(at, alphabet: input) end
+      end
+
+      test "#{access_type}: new/2: blocklist is not enumerable" do
+        at = unquote(access_type)
+
+        input = {"word"}
+        assert_raise ArgumentError, "Blocklist is not enumerable: {\"word\"}", fn -> new_sqids(at, blocklist: input) end
+
+        input = 42.456
+        assert_raise ArgumentError, "Blocklist is not enumerable: 42.456", fn -> new_sqids(at, blocklist: input) end
+
+        input = "555"
+        assert_raise ArgumentError, "Blocklist is not enumerable: \"555\"", fn -> new_sqids(at, blocklist: input) end
+      end
+
+      test "#{access_type}: new/2: some words in blocklist are not UTF-8 strings " do
+        at = unquote(access_type)
+
+        input = ["aaaa", -44.3, "ok", 5, "go", <<128>>, <<129>>, "done"]
+
+        assert_raise ArgumentError, "Some words in blocklist are not utf8 strings: [-44.3, 5, <<128>>, <<129>>]", fn ->
+          new_sqids(at, blocklist: input)
+        end
+      end
+    end
+
+    test "Blocklist: short words are not blocked" do
+      alphabet_str = "abc"
+      {:ok, blocklist} = Sqids.Blocklist.new(["abc"], _min_word_length = 4, alphabet_str)
+      refute Sqids.Blocklist.is_blocked_id(blocklist, "abc")
+    end
+
+    test "Stopped agent" do
+      assert_raise RuntimeError, ~r/Sqids shared state not found/, fn -> Sqids.Agent.get(RandomModule354343) end
+    end
+  end
+
+  defmodule AdditionalEncodingScenarios do
+    @moduledoc false
+    use ExUnit.Case, async: true
+
+    import SqidsTest.Shared
+
+    test "encode/2: invalid sqids" do
+      sqids = :no
+      assert_raise ArgumentError, "argument error: :no", fn -> Sqids.encode(sqids, [33]) end
+
+      sqids = %{a: 55}
+      assert_raise ArgumentError, "argument error: %{a: 55}", fn -> Sqids.encode(sqids, [33]) end
+
+      sqids = %{__struct__: No}
+      assert_raise ArgumentError, "argument error: %{__struct__: No}", fn -> Sqids.encode(sqids, [33]) end
+    end
+
+    test "encode!/2: invalid sqids" do
+      sqids = :no
+      assert_raise ArgumentError, "argument error: :no", fn -> Sqids.encode!(sqids, [33]) end
+
+      sqids = %{a: 55}
+      assert_raise ArgumentError, "argument error: %{a: 55}", fn -> Sqids.encode!(sqids, [33]) end
+
+      sqids = %{__struct__: No}
+      assert_raise ArgumentError, "argument error: %{__struct__: No}", fn -> Sqids.encode!(sqids, [33]) end
+    end
+
+    for access_type <- [:"Direct API", :"Using module"] do
+      test "#{access_type}: encode/2: number is not a non negative integer" do
+        {:ok, instance} = new_sqids(unquote(access_type))
+
+        input = [-1]
+        assert_raise ArgumentError, "Number is not a non negative integer: -1", fn -> encode(instance, input) end
+
+        input = [332, 43_543, -5, 23_434]
+        assert_raise ArgumentError, "Number is not a non negative integer: -5", fn -> encode(instance, input) end
+
+        input = [332, 43_543, 23_434, 233, -10]
+        assert_raise ArgumentError, "Number is not a non negative integer: -10", fn -> encode(instance, input) end
+
+        input = [55, "Oh no"]
+        assert_raise ArgumentError, "Number is not a non negative integer: \"Oh no\"", fn -> encode(instance, input) end
+      end
+
+      test "#{access_type}: encode!/2: number is not a non negative integer" do
+        {:ok, instance} = new_sqids(unquote(access_type))
+
+        input = [-1]
+        assert_raise ArgumentError, "Number is not a non negative integer: -1", fn -> encode!(instance, input) end
+
+        input = [332, 43_543, -5, 23_434]
+        assert_raise ArgumentError, "Number is not a non negative integer: -5", fn -> encode!(instance, input) end
+
+        input = [332, 43_543, 23_434, 233, -10]
+        assert_raise ArgumentError, "Number is not a non negative integer: -10", fn -> encode!(instance, input) end
+
+        input = [55, "Oh no"]
+        assert_raise ArgumentError, "Number is not a non negative integer: \"Oh no\"", fn -> encode!(instance, input) end
+      end
+
+      test "#{access_type}: encode/2: numbers not enumerable" do
+        {:ok, instance} = new_sqids(unquote(access_type))
+
+        input = {55}
+        assert_raise ArgumentError, "Numbers not enumerable: {55}", fn -> encode(instance, input) end
+
+        input = 3.5346
+        assert_raise ArgumentError, "Numbers not enumerable: 3.5346", fn -> encode(instance, input) end
+
+        input = "56"
+        assert_raise ArgumentError, "Numbers not enumerable: \"56\"", fn -> encode(instance, input) end
+
+        input = :"42"
+        assert_raise ArgumentError, "Numbers not enumerable: :\"42\"", fn -> encode(instance, input) end
+      end
+
+      test "#{access_type}: encode!/2: numbers not enumerable" do
+        {:ok, instance} = new_sqids(unquote(access_type))
+
+        input = {55}
+        assert_raise ArgumentError, "Numbers not enumerable: {55}", fn -> encode!(instance, input) end
+
+        input = 3.5346
+        assert_raise ArgumentError, "Numbers not enumerable: 3.5346", fn -> encode!(instance, input) end
+
+        input = "56"
+        assert_raise ArgumentError, "Numbers not enumerable: \"56\"", fn -> encode!(instance, input) end
+
+        input = :"42"
+        assert_raise ArgumentError, "Numbers not enumerable: :\"42\"", fn -> encode!(instance, input) end
+      end
+    end
+  end
+
+  defmodule AdditionalDecodingScenarios do
+    @moduledoc false
+    use ExUnit.Case, async: true
+
+    import SqidsTest.Shared
+
+    test "decode/2: invalid sqids" do
+      sqids = :no
+      assert_raise ArgumentError, "argument error: :no", fn -> Sqids.decode(sqids, "0") end
+
+      sqids = %{a: 55}
+      assert_raise ArgumentError, "argument error: %{a: 55}", fn -> Sqids.decode(sqids, "0") end
+
+      sqids = %{__struct__: No}
+      assert_raise ArgumentError, "argument error: %{__struct__: No}", fn -> Sqids.decode(sqids, "0") end
+    end
+
+    test "decode!/2: invalid sqids" do
+      sqids = :no
+      assert_raise ArgumentError, "argument error: :no", fn -> Sqids.decode!(sqids, "0") end
+
+      sqids = %{a: 55}
+      assert_raise ArgumentError, "argument error: %{a: 55}", fn -> Sqids.decode!(sqids, "0") end
+
+      sqids = %{__struct__: No}
+      assert_raise ArgumentError, "argument error: %{__struct__: No}", fn -> Sqids.decode!(sqids, "0") end
+    end
+
+    for access_type <- [:"Direct API", :"Using module"] do
+      test "#{access_type}: decode/2: id is not a string or valid UTF-8" do
+        {:ok, instance} = new_sqids(unquote(access_type))
+
+        input = ~c"555"
+        assert_raise ArgumentError, "Id is not a string: ~c\"555\"", fn -> decode(instance, input) end
+
+        input = 10_432_345
+        assert_raise ArgumentError, "Id is not a string: 10432345", fn -> decode(instance, input) end
+
+        input = "0000" <> <<128>>
+        assert_raise ArgumentError, "Id is not utf8: <<48, 48, 48, 48, 128>>", fn -> decode(instance, input) end
+      end
+
+      test "#{access_type}: decode!/2: id is not a string or valid UTF-8" do
+        {:ok, instance} = new_sqids(unquote(access_type))
+
+        input = ~c"555"
+        assert_raise ArgumentError, "Id is not a string: ~c\"555\"", fn -> decode!(instance, input) end
+
+        input = 10_432_345
+        assert_raise ArgumentError, "Id is not a string: 10432345", fn -> decode!(instance, input) end
+
+        input = "0000" <> <<128>>
+        assert_raise ArgumentError, "Id is not utf8: <<48, 48, 48, 48, 128>>", fn -> decode!(instance, input) end
+      end
+
+      test "#{access_type}: decode/2: id has unknown chars" do
+        {:ok, instance} = new_sqids(unquote(access_type), alphabet: "01234")
+
+        input = "5"
+        assert decode(instance, input) === {:ok, []}
+
+        input = "011015"
+        assert decode(instance, input) === {:ok, []}
+
+        input = "011015143"
+        assert decode(instance, input) === {:ok, []}
+
+        input = "000ë5"
+        assert decode(instance, input) === {:ok, []}
+      end
+
+      test "#{access_type}: decode!/2: id has unknown chars" do
+        {:ok, instance} = new_sqids(unquote(access_type), alphabet: "01234")
+
+        input = "5"
+        assert decode!(instance, input) === []
+
+        input = "011015"
+        assert decode!(instance, input) === []
+
+        input = "011015143"
+        assert decode!(instance, input) === []
+
+        input = "000ë5"
+        assert decode!(instance, input) === []
       end
     end
   end

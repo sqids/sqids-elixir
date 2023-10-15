@@ -9,11 +9,18 @@ defmodule Sqids.Alphabet do
   @opaque t :: %{required(index) => byte}
   @type index :: non_neg_integer
 
+  @type new_error_reason ::
+          {:alphabet_is_not_an_utf8_string, term}
+          | {:alphabet_contains_multibyte_graphemes, [String.grapheme(), ...]}
+          | {:alphabet_is_too_small, [min_length: pos_integer, alphabet: String.t()]}
+          | {:alphabet_contains_repeated_graphemes, [String.grapheme(), ...]}
+
   ## API
 
-  @spec new_shuffled(String.t()) :: {:ok, t} | {:error, term}
+  @spec new_shuffled(term) :: {:ok, t} | {:error, new_error_reason}
   def new_shuffled(alphabet_str) do
-    with :ok <- validate_alphabet_graphemes_are_not_multibyte(alphabet_str),
+    with :ok <- validate_alphabet_is_utf8_string(alphabet_str),
+         :ok <- validate_alphabet_graphemes_are_not_multibyte(alphabet_str),
          :ok <- validate_alphabet_length(alphabet_str),
          :ok <- validate_alphabet_has_unique_chars(alphabet_str) do
       alphabet = alphabet_str |> new_from_valid_str!() |> shuffle()
@@ -109,6 +116,14 @@ defmodule Sqids.Alphabet do
   end
 
   ## Internal
+
+  defp validate_alphabet_is_utf8_string(alphabet_str) do
+    if is_binary(alphabet_str) and String.valid?(alphabet_str) do
+      :ok
+    else
+      {:error, {:alphabet_is_not_an_utf8_string, alphabet_str}}
+    end
+  end
 
   defp validate_alphabet_graphemes_are_not_multibyte(alphabet_str) do
     alphabet_graphemes = String.graphemes(alphabet_str)
