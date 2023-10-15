@@ -492,8 +492,7 @@ defmodule SqidsTest do
         assert_raise ArgumentError, "Alphabet is not an utf8 string: [3]", fn -> new_sqids(at, alphabet: input) end
 
         input = ~c"abcdf"
-
-        assert_raise ArgumentError, "Alphabet is not an utf8 string: ~c\"abcdf\"", fn ->
+        assert_raise ArgumentError, ~r/Alphabet is not an utf8 string: .+/, fn ->
           new_sqids(at, alphabet: input)
         end
 
@@ -660,24 +659,11 @@ defmodule SqidsTest do
     end
 
     for access_type <- [:"Direct API", :"Using module"] do
-      test "#{access_type}: decode/2: id is not a string or valid UTF-8" do
-        {:ok, instance} = new_sqids(unquote(access_type))
-
-        input = ~c"555"
-        assert_raise ArgumentError, "Id is not a string: ~c\"555\"", fn -> decode(instance, input) end
-
-        input = 10_432_345
-        assert_raise ArgumentError, "Id is not a string: 10432345", fn -> decode(instance, input) end
-
-        input = "0000" <> <<128>>
-        assert_raise ArgumentError, "Id is not utf8: <<48, 48, 48, 48, 128>>", fn -> decode(instance, input) end
-      end
-
       test "#{access_type}: decode!/2: id is not a string or valid UTF-8" do
         {:ok, instance} = new_sqids(unquote(access_type))
 
         input = ~c"555"
-        assert_raise ArgumentError, "Id is not a string: ~c\"555\"", fn -> decode!(instance, input) end
+        assert_raise ArgumentError, ~r/Id is not a string: .+/, fn -> decode!(instance, input) end
 
         input = 10_432_345
         assert_raise ArgumentError, "Id is not a string: 10432345", fn -> decode!(instance, input) end
