@@ -9,9 +9,6 @@ defmodule Sqids do
   @default_alphabet "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
   @default_min_length 0
 
-  @external_resource "blocklist/one_word_per_line.txt"
-  @default_blocklist_words "blocklist/one_word_per_line.txt" |> File.read!() |> String.split("\n", trim: true)
-
   @min_length_range 0..255
   @min_blocklist_word_length 3
 
@@ -47,7 +44,7 @@ defmodule Sqids do
   def new(opts \\ []) do
     alphabet_str = opts[:alphabet] || @default_alphabet
     min_length = opts[:min_length] || @default_min_length
-    blocklist_words = opts[:blocklist] || @default_blocklist_words
+    blocklist_words = opts[:blocklist] || read_default_blocklist_words!()
 
     with {:ok, shuffled_alphabet} <- Alphabet.new_shuffled(alphabet_str),
          :ok <- validate_min_length(min_length),
@@ -120,6 +117,15 @@ defmodule Sqids do
   end
 
   ## Internal Functions: Encoding
+
+  @spec read_default_blocklist_words! :: [String.t()]
+  defp read_default_blocklist_words! do
+    :sqids
+    |> :code.priv_dir()
+    |> Path.join("blocklist.txt")
+    |> File.read!()
+    |> String.split(["\n", "\r"], trim: true)
+  end
 
   defp validate_numbers(numbers) do
     numbers

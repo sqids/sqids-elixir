@@ -6,9 +6,9 @@ defmodule Sqids.BlocklistUpdater do
 
   require Logger
 
-  @canonical_path Path.join(~w(deps sqids_blocklist output blocklist.json))
-  @one_word_per_line_path Path.join(~w(blocklist one_word_per_line.txt))
-  @changelog_path "CHANGELOG.md"
+  @path_of_canonical_json Path.join(["deps", "sqids_blocklist", "output", "blocklist.json"])
+  @path_of_txt_copy Path.join("priv", "blocklist.txt")
+  @path_of_changelog "CHANGELOG.md"
 
   def run do
     install_script_deps()
@@ -35,7 +35,7 @@ defmodule Sqids.BlocklistUpdater do
   defp convert_from_canonical_list do
     log_step("Converting canonical blocklist...")
 
-    @canonical_path
+    @path_of_canonical_json
     |> File.read!()
     |> Jason.decode!()
     |> :lists.usort()
@@ -51,12 +51,12 @@ defmodule Sqids.BlocklistUpdater do
       end
     )
     |> then(fn blocklist ->
-      File.write!(@one_word_per_line_path, blocklist)
+      File.write!(@path_of_txt_copy, blocklist)
     end)
   end
 
   defp maybe_update_changelog do
-    {:ok, git_status} = run_cmd(~w(git status -s #{@one_word_per_line_path}))
+    {:ok, git_status} = run_cmd(~w(git status -s #{@path_of_txt_copy}))
 
     case git_status |> String.split(["\n", "\r"]) |> Enum.join("") |> String.trim() do
       "" ->
@@ -64,11 +64,11 @@ defmodule Sqids.BlocklistUpdater do
 
       changed ->
         log_step("Updating changelog: #{inspect(changed)}")
-        changelog = File.read!(@changelog_path)
+        changelog = File.read!(@path_of_changelog)
         {:ok, new_blocklist_ref} = run_cmd(~w(git rev-parse --short HEAD), cd: Path.join("deps", "sqids_blocklist"))
         change_entry = "default blocklist to #{new_blocklist_ref}"
         {:ok, changelog} = :changelog_updater.insert_change(change_entry, changelog)
-        File.write!(@changelog_path, changelog)
+        File.write!(@path_of_changelog, changelog)
     end
   end
 

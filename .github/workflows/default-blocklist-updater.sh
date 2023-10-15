@@ -11,7 +11,7 @@ git checkout "${BASE_BRANCH}"
 git reset --hard "origin/${BASE_BRANCH}"
 git clean -ffdx
 
-./blocklist/update.exs
+./scripts/update_blocklist.exs
 if [[ -z $(git status -s) ]]; then
     # no update
     exit

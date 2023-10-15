@@ -5,9 +5,9 @@ on:
   push:
     paths:
       - '.github/workflows/ci.yml'
-      - 'blocklist/**'
       - 'lib/**'
       - 'mix.*'
+      - 'priv/**'
       - 'test/**'
 
   workflow_dispatch: # enables "click to run" button
