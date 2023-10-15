@@ -677,9 +677,12 @@ defmodule SqidsTest do
   end
 end
 
-defmodule Example do
-  @moduledoc false
-  use ExUnit.Case
+# doctest_file was added on Elixir 1.15
+if Version.match?(System.version(), "~> 1.15") do
+  defmodule Example do
+    @moduledoc false
+    use ExUnit.Case
 
-  doctest_file("README.md")
+    doctest_file("README.md")
+  end
 end

@@ -25,7 +25,7 @@ defmodule Sqids.Agent do
   ## API
 
   @doc false
-  @spec child_spec(mfa) :: Supervisor.child_spec()
+  @spec child_spec({module, atom, list}) :: Supervisor.child_spec()
   def child_spec(mfa) do
     %{
       id: __MODULE__,
