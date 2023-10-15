@@ -681,7 +681,7 @@ end
 if Version.match?(System.version(), "~> 1.15") do
   defmodule Example do
     @moduledoc false
-    use ExUnit.Case
+    use ExUnit.Case, async: true
 
     doctest_file("README.md")
   end
