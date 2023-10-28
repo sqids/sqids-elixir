@@ -1,12 +1,14 @@
 defmodule Sqids.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
   @source_url "https://github.com/sqids/sqids-elixir"
 
   def project do
     [
       app: :sqids,
-      version: "0.1.0",
+      version: @version,
+      description: description(),
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -14,14 +16,7 @@ defmodule Sqids.MixProject do
       elixirc_options: [
         warnings_as_errors: true
       ],
-      docs: [
-        main: "readme",
-        extras: [
-          "CHANGELOG.md",
-          "LICENSE",
-          "README.md"
-        ]
-      ],
+      docs: docs(),
       test_coverage: [
         summary: [
           threshold: 94
@@ -32,7 +27,10 @@ defmodule Sqids.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
+  defp description do
+    "Generate YouTube-looking IDs from numbers"
+  end
+
   defp deps do
     List.flatten([
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
@@ -77,11 +75,29 @@ defmodule Sqids.MixProject do
     end
   end
 
+  defp docs do
+    [
+      main: "readme",
+      name: "Sqids",
+      source_ref: @version,
+      canonical: "http://hexdocs.pm/sqids",
+      source_url: @source_url,
+      extras: [
+        "CHANGELOG.md",
+        "LICENSE",
+        "README.md"
+      ]
+    ]
+  end
+
   defp package do
     [
       maintainers: ["Guilherme Andrade"],
       licenses: ["MIT"],
-      links: %{"GitHub" => @source_url}
+      links: %{
+        "About Sqids" => "https://sqids.org/",
+        "GitHub" => @source_url
+      }
     ]
   end
 end
