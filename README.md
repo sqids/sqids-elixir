@@ -11,7 +11,7 @@ library for generating YouTube-looking IDs from numbers. These IDs are short,
 can be generated with a custom alphabet and are collision-free. [Read
 more](https://sqids.org/faq).
 
-This is what they look like in a URL:
+This is what they look like in URLs:
 ```
 https://example.com/LchsyE
 https://example.com/Uxmq8Y
@@ -130,7 +130,7 @@ the process.
 iex> {:ok, sqids} = Sqids.new(blocklist: ["86Rf07"])
 iex> numbers = [1, 2, 3]
 iex> id = Sqids.encode!(sqids, numbers)
-iex> ^id = "se8ojk" # instead of "86Rf07"
+iex> ^id = "se8ojk" # see how "86Rf07" was censored
 iex> ^numbers = Sqids.decode!(sqids, id)
 ```
 
