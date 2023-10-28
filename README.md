@@ -32,7 +32,7 @@ identifiers in your software as alphanumeric strings.
 ### ❌ Not Good For
 
 * **Sensitive data**: this it not an encryption library
-* **User IDs** generated in sequence, or equivalents: can be decoded, revealing
+* **User IDs** generated in sequence, or equivalents, can be decoded, revealing
   user count and/or business growth
 
 ## Features:

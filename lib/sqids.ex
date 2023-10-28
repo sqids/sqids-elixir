@@ -1,5 +1,12 @@
 defmodule Sqids do
-  @moduledoc "Sqids API"
+  @moduledoc """
+  Sqids API
+
+  > ℹ️ Check out the [docs entry page](readme.html) for an example on how to `use
+  > Sqids` to generate a module that bypasses the need to pass along `sqids` context
+  > on every encode or decode call.
+  """
+
   alias Sqids.Alphabet
   alias Sqids.Blocklist
 
@@ -31,7 +38,7 @@ defmodule Sqids do
   @enforce_keys [:alphabet, :min_length, :blocklist]
   defstruct [:alphabet, :min_length, :blocklist]
 
-  @typedoc "Context for an instance of Sqids"
+  @typedoc "Context for Sqids"
   @opaque t :: %__MODULE__{
             alphabet: Alphabet.t(),
             # the minimum length IDs should be
