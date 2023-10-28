@@ -14,13 +14,14 @@ defmodule Sqids do
 
   ## Types
 
+  @typedoc "Opts for `new/1`"
   @type opts :: [
           alphabet: String.t(),
           min_length: non_neg_integer,
           blocklist: enumerable(String.t())
         ]
 
-  # Enumerable.t/1 is available only on Elixir 1.14+
+  @typedoc "Wrapper type for Elixir 1.13 or older"
   if Version.match?(System.version(), "~> 1.14") do
     @type enumerable(t) :: Enumerable.t(t)
   else
@@ -30,6 +31,7 @@ defmodule Sqids do
   @enforce_keys [:alphabet, :min_length, :blocklist]
   defstruct [:alphabet, :min_length, :blocklist]
 
+  @typedoc "Context for an instance of Sqids"
   @opaque t :: %__MODULE__{
             alphabet: Alphabet.t(),
             # the minimum length IDs should be
@@ -91,7 +93,7 @@ defmodule Sqids do
   end
 
   @doc """
-  Encodes zero or more `numbers` into an `id`, according to `sqids`s alphabet,
+  Encodes zero or more `numbers` into an `id`, according to `sqids`'s alphabet,
   blocklist, and minimum length. Raises in case of error.
   """
   @spec encode!(sqids, numbers) :: id
@@ -107,8 +109,9 @@ defmodule Sqids do
   end
 
   @doc """
-  Tries to encode zero or more `numbers` into as an `id`, according to `sqids`s
-  alphabet, blocklist, and minimum length. Returns an error otherwise.
+  Tries to encode zero or more `numbers` into as an `id`, according to
+  `sqids`'s alphabet, blocklist, and minimum length. Returns an error
+  otherwise.
   """
   @spec encode(sqids, numbers) :: {:ok, id} | {:error, term}
         when sqids: t(), numbers: enumerable(non_neg_integer), id: String.t()
@@ -125,7 +128,7 @@ defmodule Sqids do
   def encode(sqids, _numbers), do: :erlang.error({:badarg, sqids})
 
   @doc """
-  Decodes an `id` into zero or more `numbers` according to `sqids`s alphabet.
+  Decodes an `id` into zero or more `numbers` according to `sqids`'s alphabet.
 
   Like in the [reference implementation](https://github.com/sqids/sqids-spec),
   the presence of unknown characters within `id` will result in an empty list
@@ -482,7 +485,7 @@ defmodule Sqids do
       end
 
       @doc """
-      Encodes `numbers` into an `id`, according to `#{__MODULE__}`s alphabet,
+      Encodes `numbers` into an `id`, according to `#{__MODULE__}`'s alphabet,
       blocklist, and minimum length. Raises in case of error.
       """
       @spec encode!(numbers) :: id
@@ -493,7 +496,7 @@ defmodule Sqids do
       end
 
       @doc """
-      Tries to encode `numbers` into an `id`, according to `#{__MODULE__}`s
+      Tries to encode `numbers` into an `id`, according to `#{__MODULE__}`'s
       alphabet, blocklist, and minimum length. Returns an error otherwise.
       """
       @spec encode(numbers) :: {:ok, id} | {:error, term}
@@ -505,7 +508,7 @@ defmodule Sqids do
 
       @doc """
       Decodes an `id` into zero or more `numbers`, according to
-      `#{__MODULE__}`s alphabet.
+      `#{__MODULE__}`'s alphabet.
       """
       @spec decode!(id) :: numbers
             when id: String.t(), numbers: [non_neg_integer]
