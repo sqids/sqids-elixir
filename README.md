@@ -54,7 +54,7 @@ The package can be installed by adding `sqids` to your list of dependencies in `
 ```elixir
 def deps do
   [
-    {:sqids, "~> 0.1"} # FIXME not uploaded yet
+    {:sqids, "~> 0.1.0"}
   ]
 end
 ```
