@@ -113,6 +113,8 @@ iex> ^numbers = Sqids.decode!(sqids, id)
 
 In order to decode IDs back, they need to be in the same alphabet.
 
+For practical reasons, the standard limits alphabets to ASCII characters.
+
 (Thanks to Ben Wheeler for his
 suggestion for [a set of unambiguous-looking characters](https://stackoverflow.com/questions/11919708/set-of-unambiguous-looking-letters-numbers-for-user-input/58098360#58098360)
 on Stack Overflow.)
