@@ -11,6 +11,7 @@ defmodule Sqids.Agent do
 
   ## Types
 
+  @typedoc false
   @type shared_state_init :: {function(), list()}
 
   @typep init_args :: [
