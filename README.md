@@ -41,7 +41,7 @@ identifiers in your software as alphanumeric strings.
 * 🤬 Avoid common profanity in generated IDs
 * 🎲 IDs appear randomized when encoding incremental numbers
 * 🧰 Decode IDs back into numbers
-* 🔤 Generate IDs with a minimum length, making them more uniform
+* ↔️  Generate IDs with a minimum length, making them more uniform
 * 🔤 Generate IDs with a custom alphabet
 * 👩‍💻 Available in [multiple programming languages](https://sqids.org)
 * 👯‍♀️ Every equally configured implementation produces the same IDs
