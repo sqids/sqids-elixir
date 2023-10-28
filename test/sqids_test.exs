@@ -481,6 +481,15 @@ defmodule SqidsTest do
     import SqidsTest.Shared
 
     for access_type <- [:"Direct API", :"Using module"] do
+      test "#{access_type}: new/1: options is not a proper list" do
+        at = unquote(access_type)
+        assert_raise ArgumentError, "Opts not a proper list: :not_a_list", fn -> new_sqids(at, :not_a_list) end
+
+        assert_raise ArgumentError, "Opts not a proper list: [:improper | :list]", fn ->
+          new_sqids(at, [:improper | :list])
+        end
+      end
+
       test "#{access_type}: new/2: alphabet is not an UTF-8 string" do
         at = unquote(access_type)
 

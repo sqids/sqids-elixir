@@ -38,13 +38,26 @@ defmodule Sqids do
             blocklist: Blocklist.t()
           }
 
+  ## Guards
+
+  defguardp is_proper_list(v) when length(v) >= 0
+
   ## API Functions
 
   @doc """
-  Validates arguments and creates a context used for both encoding and decoding.
+  Creates a context used for both encoding and decoding.
+
+  Can receive a list of zero or more `t:opts/0`:
+  * `alphabet`: a case and order -sensitive string containing the chars of which generated IDs will be made of;
+  * `min_length`: the minimum length of your generated IDs (padding added if needed);
+  * `blocklist`: an enumerable collection of strings which shouldn't appear in generated IDs.
+
+  Returns error if any of the `t:opts/0` is invalid.
   """
   @spec new(opts()) :: {:ok, t()} | {:error, term}
-  def new(opts \\ []) do
+  def new(opts \\ [])
+
+  def new(opts) when is_proper_list(opts) do
     alphabet_str = opts[:alphabet] || @default_alphabet
     min_length = opts[:min_length] || @default_min_length
     blocklist_words = opts[:blocklist] || read_default_blocklist_words!()
@@ -71,6 +84,10 @@ defmodule Sqids do
       {:error, _} = error ->
         error
     end
+  end
+
+  def new(opts) do
+    raise %ArgumentError{message: "Opts not a proper list: #{inspect(opts)}"}
   end
 
   @doc """
