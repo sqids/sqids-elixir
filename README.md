@@ -100,7 +100,8 @@ decoded.)
 
 ### Using a custom alphabet
 
-Generated IDs will be only contain characters from the chosen alphabet:
+Generated IDs will be only contain characters from the chosen alphabet, which
+is sensitive to both case and order.
 
 ```elixir
 iex> {:ok, sqids} = Sqids.new(alphabet: "cdefhjkmnprtvwxy2345689")
@@ -118,7 +119,7 @@ on Stack Overflow.)
 
 ### Profanity: preventing specific words within the generated IDs
 
-Place [the ID generated earlier with defaults](#default-configuration) in the
+Place [the ID generated with defaults](#default-configuration) in the
 blocklist, replacing [the latter](https://github.com/sqids/sqids-blocklist/) in
 the process.
 
