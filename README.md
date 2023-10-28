@@ -19,8 +19,8 @@ https://example.com/3CwlG7
 
 ## Why use them?
 
-The main purpose is visual: if you'd like to expose internal integer
-identifiers as alphanumeric strings, Sqids could be a good choice.
+The main purpose is visual: you can use `Sqids` if you'd like to expose integer
+identifiers in your software as alphanumeric strings.
 
 ### ✅ Use Cases
 
@@ -32,7 +32,7 @@ identifiers as alphanumeric strings, Sqids could be a good choice.
 
 * **Sensitive data**: this it not an encryption library
 * **User IDs** generated in sequence, or equivalents: can be decoded, revealing
-  user count and/or business growth.
+  user count and/or business growth
 
 ## Features:
 
@@ -94,8 +94,8 @@ iex> ^id = "86Rf07xd4z" # instead of "86Rf07"
 iex> ^numbers = Sqids.decode!(sqids, id)
 ```
 
-(Earlier IDs, for ex. generated with a previous configuration in which
-padding was not yet enforced or a different length was configured, can still be
+(Older IDs, for ex. generated with a previous configuration in which padding
+was not yet enforced or a different length was configured, can still be
 decoded.)
 
 ### Using a custom alphabet
@@ -119,8 +119,8 @@ on Stack Overflow.)
 ### Profanity: preventing specific words within the generated IDs
 
 Place [the ID generated earlier with defaults](#default-configuration) in the
-blocklist, replacing the [bundled
-one](https://github.com/sqids/sqids-blocklist/).
+blocklist, replacing [the latter](https://github.com/sqids/sqids-blocklist/) in
+the process.
 
 ```elixir
 iex> {:ok, sqids} = Sqids.new(blocklist: ["86Rf07"])
