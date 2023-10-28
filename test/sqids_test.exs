@@ -506,7 +506,7 @@ defmodule SqidsTest do
         assert_raise ArgumentError, "Alphabet is not an utf8 string: <<128>>", fn -> new_sqids(at, alphabet: input) end
       end
 
-      test "#{access_type}: new/2: blocklist is not enumerable" do
+      test "#{access_type}: new/1: blocklist is not enumerable" do
         at = unquote(access_type)
 
         input = {"word"}
@@ -519,7 +519,7 @@ defmodule SqidsTest do
         assert_raise ArgumentError, "Blocklist is not enumerable: \"555\"", fn -> new_sqids(at, blocklist: input) end
       end
 
-      test "#{access_type}: new/2: some words in blocklist are not UTF-8 strings " do
+      test "#{access_type}: new/1: some words in blocklist are not UTF-8 strings " do
         at = unquote(access_type)
 
         input = ["aaaa", -44.3, "ok", 5, "go", <<128>>, <<129>>, "done"]
