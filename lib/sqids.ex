@@ -462,13 +462,20 @@ defmodule Sqids do
 
   ## Code generation
 
+  @doc """
+  Returns Supervisor child spec for callback module.
+  """
+  @callback child_spec() :: Supervisor.child_spec()
+
   defmacro __using__([]) do
     quote do
+      @behaviour Sqids
+
       ## API
 
       @spec child_spec(Sqids.opts()) :: Supervisor.child_spec()
       @doc """
-      Returns Supervisor child spec for #{__MODULE__}.
+      Returns Supervisor child spec for #{__MODULE__} and `opts`.
       """
       def child_spec(opts) do
         mfa = {__MODULE__, :start_link, [opts]}

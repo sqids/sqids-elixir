@@ -89,16 +89,12 @@ a uniquely named process. Both names are derived from the module's.
 iex> defmodule MyApp.Sqids do
 iex>   use Sqids
 iex>   
+iex>   @impl true
 iex>   def child_spec() do
 iex>       child_spec([
-iex>           # Custom alphabet
-iex>           # alphabet: alphabet,
-iex>          
-iex>           # Padding
-iex>           # min_length: min_length,
-iex>         
-iex>           # Custom blocklist
-iex>           # blocklist: blocklist
+iex>           # alphabet: alphabet,     # Custom alphabet
+iex>           # min_length: min_length, # Padding
+iex>           # blocklist: blocklist    # Custom blocklist
 iex>       ])
 iex>   end
 iex> end

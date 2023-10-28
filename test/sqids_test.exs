@@ -10,6 +10,9 @@ defmodule SqidsTest do
     defmodule UsingModule do
       @moduledoc false
       use Sqids
+
+      @impl true
+      def child_spec, do: child_spec([])
     end
 
     def new_sqids(_access_type, opts \\ [])
