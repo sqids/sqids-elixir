@@ -72,19 +72,19 @@ defmodule Sqids.Blocklist do
     alphabet_graphemes_downcased = alphabet_str |> String.downcase() |> String.graphemes() |> MapSet.new()
     sort_fun = fn word -> {String.length(word), word} end
 
-    words
-    |> Enum.uniq()
-    |> Enum.reduce(
-      _acc0 = %__MODULE__{min_word_length: min_word_length},
-      &maybe_add_blocklist_entry(&1, &2, alphabet_graphemes_downcased)
-    )
-    |> then(fn blocklist ->
-      %{
-        blocklist
-        | prefixes_and_suffixes: Enum.sort_by(blocklist.prefixes_and_suffixes, sort_fun),
-          matches_anywhere: Enum.sort_by(blocklist.matches_anywhere, sort_fun)
-      }
-    end)
+    blocklist =
+      words
+      |> Enum.uniq()
+      |> Enum.reduce(
+        _acc0 = %__MODULE__{min_word_length: min_word_length},
+        &maybe_add_blocklist_entry(&1, &2, alphabet_graphemes_downcased)
+      )
+
+    %{
+      blocklist
+      | prefixes_and_suffixes: Enum.sort_by(blocklist.prefixes_and_suffixes, sort_fun),
+        matches_anywhere: Enum.sort_by(blocklist.matches_anywhere, sort_fun)
+    }
   end
 
   @spec maybe_add_blocklist_entry(String.t(), t(), MapSet.t(String.grapheme())) :: t()

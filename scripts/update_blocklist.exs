@@ -35,24 +35,24 @@ defmodule Sqids.BlocklistUpdater do
   defp convert_from_canonical_list do
     log_step("Converting canonical blocklist...")
 
-    @path_of_canonical_json
-    |> File.read!()
-    |> Jason.decode!()
-    |> :lists.usort()
-    |> Enum.reduce(
-      _acc0 = "",
-      fn word, acc ->
-        refute match?(
-                 {true, _},
-                 {String.contains?(word, ["\n", "\r"]), word}
-               )
+    blocklist =
+      @path_of_canonical_json
+      |> File.read!()
+      |> Jason.decode!()
+      |> :lists.usort()
+      |> Enum.reduce(
+        _acc0 = "",
+        fn word, acc ->
+          refute match?(
+                   {true, _},
+                   {String.contains?(word, ["\n", "\r"]), word}
+                 )
 
-        [acc, word, "\n"]
-      end
-    )
-    |> then(fn blocklist ->
-      File.write!(@path_of_txt_copy, blocklist)
-    end)
+          [acc, word, "\n"]
+        end
+      )
+
+    File.write!(@path_of_txt_copy, blocklist)
   end
 
   defp maybe_update_changelog do

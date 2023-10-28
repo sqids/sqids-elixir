@@ -2,7 +2,8 @@
 
 [![](https://img.shields.io/hexpm/v/sqids.svg?style=flat)](https://hex.pm/packages/sqids)
 [![](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml/badge.svg)](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml)
-[![Elixir Versions](https://img.shields.io/badge/Compatible%20with%20Elixir-1.12%20to%201.15-blue)](https://elixir-lang.org/)
+[![Elixir Versions](https://img.shields.io/badge/Compatible%20with%20Elixir-1.7%20to%201.15-blue)](https://elixir-lang.org/)
+[![Erlang Versions](https://img.shields.io/badge/Supported%20Erlang%2FOTP-21.3%20to%2026-blue)](https://www.erlang.org)
 
 
 [Sqids](https://sqids.org/elixir) (*pronounced "squids"*) for Elixir is a

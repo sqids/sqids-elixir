@@ -13,7 +13,8 @@ on:
   workflow_dispatch: # enables "click to run" button
 
 env:
-  HIGHEST_ELIXIR_VERSION_IN_MATRIX: '1.15'
+  ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE: '1.15' # Should be highest in matrix
+  ELIXIR_VERSIONS_ON_WHICH_TO_RUN_DIALYZER: "['1.12', '1.13', '1.14', '1.15']"
 
 jobs:
   ci:
@@ -23,6 +24,11 @@ jobs:
     strategy:
       matrix:
         elixir_vsn: [
+          '1.7',
+          '1.8',
+          '1.9',
+          '1.10',
+          '1.11',
           '1.12',
           '1.13',
           '1.14',
@@ -77,17 +83,18 @@ jobs:
         run: mix do deps.get, deps.clean --unused
 
       - name: Assert code is formatted
-        if: ${{matrix.elixir_vsn == env.HIGHEST_ELIXIR_VERSION_IN_MATRIX}}
+        if: ${{matrix.elixir_vsn == env.ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE}}
         run: mix format --check-formatted
 
       - name: Run Credo
-        if: ${{matrix.elixir_vsn == env.HIGHEST_ELIXIR_VERSION_IN_MATRIX}}
+        if: ${{matrix.elixir_vsn == env.ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE}}
         run: mix credo --strict
 
       - name: Run tests
         run: mix test --cover
 
       - name: Run Dialyzer
+        if: ${{contains(fromJson(env.ELIXIR_VERSIONS_ON_WHICH_TO_RUN_DIALYZER), matrix.elixir_vsn)}}
         run: MIX_ENV=test mix dialyzer
 
       - name: Save build artifacts to cache

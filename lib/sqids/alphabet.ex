@@ -1,6 +1,6 @@
 defmodule Sqids.Alphabet do
   @moduledoc false
-  # import ExUnit.Assertions
+  import ExUnit.Assertions
 
   @min_alphabet_length 3
 
@@ -106,13 +106,12 @@ defmodule Sqids.Alphabet do
   @spec index_of!(t(), byte) :: index
   def index_of!(%{} = alphabet, char) do
     # It would be nice to optimize this.
-    alphabet
-    |> Enum.find_value(fn {index, byte} ->
-      byte == char and index
-    end)
-    |> then(fn index when index != nil ->
-      index
-    end)
+
+    index =
+      Enum.find_value(alphabet, fn {index, byte} -> byte == char and index end)
+
+    assert index !== nil
+    index
   end
 
   ## Internal

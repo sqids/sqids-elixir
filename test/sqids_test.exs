@@ -1,10 +1,14 @@
 defmodule SqidsTest do
   # doctest Sqids
 
+  require Bitwise
+
   ## Shared between test cases
 
   defmodule Shared do
+    @moduledoc false
     defmodule UsingModule do
+      @moduledoc false
       use Sqids
     end
 
@@ -53,6 +57,7 @@ defmodule SqidsTest do
 
     def assert_encode_and_back(sqids, numbers) do
       import ExUnit.Assertions
+
       assert decode!(sqids, encode!(sqids, numbers)) === numbers
     end
 
