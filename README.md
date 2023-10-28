@@ -77,9 +77,58 @@ iex> ^numbers = Sqids.decode!(sqids, id)
 > canonical, you have to re-encode decoded numbers and check that the
 > generated ID matches.
 
+### Convenience: placing Sqids under your app's supervision tree
+
+This allows you to encode and decode IDs without managing context.
+
+A module is generated with the `Sqids` context stored in a uniquely named
+[`persistent_term`](https://www.erlang.org/doc/man/persistent_term), managed by
+a uniquely named process. Both names are derived from the module's.
+
+```elixir
+iex> defmodule MyApp.Sqids do
+iex>   use Sqids
+iex>   
+iex>   def child_spec() do
+iex>       child_spec([
+iex>           # Custom alphabet
+iex>           # alphabet: alphabet,
+iex>          
+iex>           # Padding
+iex>           # min_length: min_length,
+iex>         
+iex>           # Custom blocklist
+iex>           # blocklist: blocklist
+iex>       ])
+iex>   end
+iex> end
+iex>
+iex>
+iex> defmodule MyApp.Application do
+iex>   # ...
+iex>   def start(_type, _args) do
+iex>      children = [
+iex>        MyApp.Sqids,
+iex>        # ...
+iex>      ]
+iex>
+iex>      opts = [strategy: :one_for_one, name: MyApp.Supervisor]
+iex>      Supervisor.start_link(children, opts)
+iex>   end
+iex> end
+iex> {:ok, _} = MyApp.Application.start(:normal, [])
+iex>
+iex>
+iex> numbers = [1, 2, 3]
+iex> id = MyApp.Sqids.encode!(numbers)
+iex> ^id = "86Rf07"
+iex> ^numbers = MyApp.Sqids.decode!(id)
+```
+
 ### Custom configuration
 
-Examples of custom configuration follow.
+Examples of custom configuration follow. All options are applicable to the
+generated module shown before.
 
 Note that different options can be used together for further customization.
 Check the [API reference](https://hexdocs.pm/sqids/api-reference.html) for
@@ -132,34 +181,6 @@ iex> numbers = [1, 2, 3]
 iex> id = Sqids.encode!(sqids, numbers)
 iex> ^id = "se8ojk" # see how "86Rf07" was censored
 iex> ^numbers = Sqids.decode!(sqids, id)
-```
-
-### Placing Sqids under your supervision tree for convenience
-
-```elixir
-iex> defmodule MyApp.Sqids do
-iex>   use Sqids
-iex> end
-iex>
-iex> defmodule MyApp.Application do
-iex>   # ...
-iex>   def start(_type, _args) do
-iex>      children = [
-iex>        MyApp.Sqids # or {MyApp.Sqids, opts}
-iex>        # ...
-iex>      ]
-iex>
-iex>      opts = [strategy: :one_for_one, name: Foobar.Supervisor]
-iex>      Supervisor.start_link(children, opts)
-iex>   end
-iex> end
-iex> {:ok, _} = MyApp.Application.start(:normal, [])
-iex>
-iex>
-iex> numbers = [1, 2, 3]
-iex> id = MyApp.Sqids.encode!(numbers)
-iex> ^id = "86Rf07"
-iex> ^numbers = MyApp.Sqids.decode!(id)
 ```
 
 ## 📝 License
