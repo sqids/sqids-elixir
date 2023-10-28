@@ -4,33 +4,47 @@
 [![](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml/badge.svg)](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml)
 [![Elixir Versions](https://img.shields.io/badge/Compatible%20with%20Elixir-1.12%20to%201.15-blue)](https://elixir-lang.org/)
 
-[Sqids](https://sqids.org/python) (*pronounced "squids"*) is a small library
-that lets you **generate unique IDs from numbers**. It's good for link
-shortening, fast & URL-safe ID generation and decoding back into numbers for
-quicker database lookups.
 
-Features:
+[Sqids](https://sqids.org/elixir) (*pronounced "squids"*) for Elixir is a
+library for generating YouTube-looking IDs from numbers. These IDs are short,
+can be generated with a custom alphabet and are collision-free. [Read
+more](https://sqids.org/faq).
 
-- **Encode multiple numbers** - generate short IDs from one or several non-negative numbers
-- **Quick decoding** - easily decode IDs back into numbers
-- **Unique IDs** - generate unique IDs by shuffling the alphabet once
-- **ID padding** - provide minimum length to make IDs more uniform
-- **URL safe** - auto-generated IDs do not contain common profanity
-- **Randomized output** - Sequential input provides nonconsecutive IDs
-- **Many implementations** - Support for [40+ programming languages](https://sqids.org/)
+This is what they look like in a URL:
+```
+https://example.com/LchsyE
+https://example.com/Uxmq8Y
+https://example.com/3CwlG7
+```
 
-## 🧰 Use-cases
+## Why use them?
 
-Good for:
+The main purpose is visual: if you'd like to expose internal integer
+identifiers as alphanumeric strings, Sqids could be a good choice.
 
-- Generating IDs for public URLs (eg: link shortening)
-- Generating IDs for internal systems (eg: event tracking)
-- Decoding for quicker database lookups (eg: by primary keys)
+### ✅ Use Cases
 
-Not good for:
+* **Link shortening**: default alphabet is safe to use in URLs, and common profanity is avoided
+* **Event IDs**: collision-free ID generation
+* **Database lookups**: by decoding IDs back into numbers
 
-- Sensitive data (this is not an encryption library)
-- User IDs (can be decoded revealing user count)
+### ❌ Not Good For
+
+* **Sensitive data**: this it not an encryption library
+* **User IDs** generated in sequence, or equivalents: can be decoded, revealing
+  user count and/or business growth.
+
+## Features:
+
+* 🆔 Generate short IDs from non-negative integers
+* 🤬 Avoid common profanity in generated IDs
+* 🎲 IDs appear randomized when encoding incremental numbers
+* 🧰 Decode IDs back into numbers
+* 🔤 Generate IDs with a minimum length, making them more uniform
+* 🔤 Generate IDs with a custom alphabet
+* 👩‍💻 Available in [multiple programming languages](https://sqids.org)
+* 👯‍♀️ Every equally configured implementation produces the same IDs
+* 🍻 Small library with a permissive license
 
 ## 🚀 Getting started
 
@@ -46,70 +60,103 @@ end
 
 ## 👩‍💻 Examples
 
-    iex> # Create a new module to handle your `Sqids` config:
-    iex> {:ok, sqids} = Sqids.new()
-    iex> # Simple encode & decode:
-    iex> numbers = [1, 2, 3]
-    iex> id = Sqids.encode!(sqids, numbers)
-    iex> ^numbers = Sqids.decode!(sqids, id)
+### Default configuration
+
+```elixir
+iex> {:ok, sqids} = Sqids.new()
+iex> numbers = [1, 2, 3]
+iex> id = Sqids.encode!(sqids, numbers)
+iex> ^id = "86Rf07"
+iex> ^numbers = Sqids.decode!(sqids, id)
+```
 
 > **Note**
 > 🚧 Because of the algorithm's design, **multiple IDs can decode back into the
 > same sequence of numbers**. If it's important to your design that IDs are
-> canonical, you have to manually re-encode decoded numbers and check that the
+> canonical, you have to re-encode decoded numbers and check that the
 > generated ID matches.
 
-Enforce a *minimum* length for IDs:
+### Custom configuration
 
-    iex> {:ok, sqids} = Sqids.new(min_length: 10)
-    iex> numbers = [1, 2, 3]
-    iex> id = Sqids.encode!(sqids, numbers)
-    iex> ^id = "86Rf07xd4z"
-    iex> ^numbers = Sqids.decode!(sqids, id)
+Examples of custom configuration follow.
 
-Randomize IDs by providing a custom alphabet:
+Note that different options can be used together for further customization.
+Check the [API reference](https://hexdocs.pm/sqids/api-reference.html) for
+details.
 
-    iex> {:ok, sqids} = Sqids.new(alphabet: "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE")
-    iex> numbers = [1, 2, 3]
-    iex> id = Sqids.encode!(sqids, numbers)
-    iex> ^id = "B4aajs"
-    iex> ^numbers = Sqids.decode!(sqids, id)
+### Padding: generated IDs have a minimum length
 
-Prevent specific words from appearing anywhere in the auto-generated IDs:
+```elixir
+iex> {:ok, sqids} = Sqids.new(min_length: 10)
+iex> numbers = [1, 2, 3]
+iex> id = Sqids.encode!(sqids, numbers)
+iex> ^id = "86Rf07xd4z" # instead of "86Rf07"
+iex> ^numbers = Sqids.decode!(sqids, id)
+```
 
-    iex> {:ok, sqids} = Sqids.new(blocklist: ["86Rf07"])
-    iex> numbers = [1, 2, 3]
-    iex> id = Sqids.encode!(sqids, numbers)
-    iex> ^id = "se8ojk"
-    iex> ^numbers = Sqids.decode!(sqids, id)
+(Earlier IDs, for ex. generated with a previous configuration in which
+padding was not yet enforced or a different length was configured, can still be
+decoded.)
 
-Place `sqids` under your supervision tree for convenience:
+### Using a custom alphabet
 
-    iex> defmodule MyApp.Sqids do
-    iex>   use Sqids
-    iex> end
-    iex>
-    iex> defmodule MyApp.Application do
-    iex>   # ...
-    iex>   def start(_type, _args) do
-    iex>      children = [
-    iex>        MyApp.Sqids # or {MyApp.Sqids, opts}
-    iex>        # ...
-    iex>      ]
-    iex>
-    iex>      opts = [strategy: :one_for_one, name: Foobar.Supervisor]
-    iex>      Supervisor.start_link(children, opts)
-    iex>   end
-    iex> end
-    iex> {:ok, _} = MyApp.Application.start(:normal, [])
-    iex>
-    iex>
-    iex> numbers = [1, 2, 3]
-    iex> id = MyApp.Sqids.encode!(numbers)
-    iex> ^id = "86Rf07"
-    iex> ^numbers = MyApp.Sqids.decode!(id)
+Generated IDs will be only contain characters from the chosen alphabet:
 
-Check the [API reference](https://hexdocs.pm/sqids/api-reference.html) for more details.
+```elixir
+iex> {:ok, sqids} = Sqids.new(alphabet: "cdefhjkmnprtvwxy2345689")
+iex> numbers = [1, 2, 3]
+iex> id = Sqids.encode!(sqids, numbers)
+iex> ^id = "wc9xdr"
+iex> ^numbers = Sqids.decode!(sqids, id)
+```
+
+In order to decode IDs back, they need to be in the same alphabet.
+
+(Thanks to Ben Wheeler for his
+suggestion for [a set of unambiguous-looking characters](https://stackoverflow.com/questions/11919708/set-of-unambiguous-looking-letters-numbers-for-user-input/58098360#58098360)
+on Stack Overflow.)
+
+### Profanity: preventing specific words within the generated IDs
+
+Place [the ID generated earlier with defaults](#default-configuration) in the
+blocklist, replacing the [bundled
+one](https://github.com/sqids/sqids-blocklist/).
+
+```elixir
+iex> {:ok, sqids} = Sqids.new(blocklist: ["86Rf07"])
+iex> numbers = [1, 2, 3]
+iex> id = Sqids.encode!(sqids, numbers)
+iex> ^id = "se8ojk" # instead of "86Rf07"
+iex> ^numbers = Sqids.decode!(sqids, id)
+```
+
+### Placing Sqids under your supervision tree for convenience
+
+```elixir
+iex> defmodule MyApp.Sqids do
+iex>   use Sqids
+iex> end
+iex>
+iex> defmodule MyApp.Application do
+iex>   # ...
+iex>   def start(_type, _args) do
+iex>      children = [
+iex>        MyApp.Sqids # or {MyApp.Sqids, opts}
+iex>        # ...
+iex>      ]
+iex>
+iex>      opts = [strategy: :one_for_one, name: Foobar.Supervisor]
+iex>      Supervisor.start_link(children, opts)
+iex>   end
+iex> end
+iex> {:ok, _} = MyApp.Application.start(:normal, [])
+iex>
+iex>
+iex> numbers = [1, 2, 3]
+iex> id = MyApp.Sqids.encode!(numbers)
+iex> ^id = "86Rf07"
+iex> ^numbers = MyApp.Sqids.decode!(id)
+```
 
 ## 📝 License
 
