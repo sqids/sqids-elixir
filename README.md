@@ -104,7 +104,7 @@ iex> ^numbers = MyApp.CompileTimeSqids.decode!(id)
 
 This also allows you to encode and decode IDs without managing context.
 
-If not options are known at compile time but you'd still like to not pass
+If not all options are known at compile time but you'd still like to not pass
 context on every encode and decode call, you can `use Sqids`, which will
 generate functions that retrieve the underlying context transparently and call
 `Sqids` for you.
