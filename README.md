@@ -20,20 +20,21 @@ https://example.com/3CwlG7
 
 ## Why use them?
 
-The main purpose is visual: you can use `Sqids` if you'd like to expose integer
+The main purpose is visual: you can use Sqids if you'd like to expose integer
 identifiers in your software as alphanumeric strings.
 
 ### ✅ Use Cases
 
-* **Link shortening**: default alphabet is safe to use in URLs, and common profanity is avoided
+* **Link shortening**: default alphabet is safe to use in URLs, and common
+  profanity is avoided
 * **Event IDs**: collision-free ID generation
 * **Database lookups**: by decoding IDs back into numbers
 
 ### ❌ Not Good For
 
 * **Sensitive data**: this it not an encryption library
-* **User IDs** generated in sequence, or equivalents, can be decoded, revealing
-  user count and/or business growth
+* **User IDs** generated in sequence, or equivalents, which can be decoded,
+  revealing user count and/or business growth
 
 ## Features:
 
@@ -44,12 +45,13 @@ identifiers in your software as alphanumeric strings.
 * ↔️ Generate IDs with a minimum length, making them more uniform
 * 🔤 Generate IDs with a custom alphabet
 * 👩‍💻 Available in [multiple programming languages](https://sqids.org)
-* 👯‍♀️ Every equally configured implementation produces the same IDs
+* 👯‍♀️ Equally configured implementations produce the same IDs
 * 🍻 Small library with a permissive license
 
 ## 🚀 Getting started
 
-The package can be installed by adding `sqids` to your list of dependencies in `mix.exs`:
+The package can be installed by adding `sqids` to your list of dependencies in
+`mix.exs`:
 
 ```elixir
 def deps do
@@ -81,13 +83,16 @@ iex> ^numbers = Sqids.decode!(sqids, id)
 
 This allows you to encode and decode IDs without managing context.
 
-A module is generated with the `Sqids` context stored in a uniquely named
+Functions are generated which retrieve the underlying Sqids context
+transparently. The context is stored in a uniquely named
 [`persistent_term`](https://www.erlang.org/doc/man/persistent_term), managed by
-a uniquely named process. Both names are derived from the module's.
+a uniquely named process. Both names are derived from your module's.
 
 ```elixir
 iex> defmodule MyApp.Sqids do
 iex>   use Sqids
+iex>   # Functions encrypt/1, encrypt!/1, decrypt/1, decrypt!/1, etc
+iex>   # will be generated.
 iex>   
 iex>   @impl true
 iex>   def child_spec() do
@@ -112,9 +117,9 @@ iex>      opts = [strategy: :one_for_one, name: MyApp.Supervisor]
 iex>      Supervisor.start_link(children, opts)
 iex>   end
 iex> end
+iex>
+iex>
 iex> {:ok, _} = MyApp.Application.start(:normal, [])
-iex>
-iex>
 iex> numbers = [1, 2, 3]
 iex> id = MyApp.Sqids.encode!(numbers)
 iex> ^id = "86Rf07"
@@ -146,8 +151,8 @@ decoded.)
 
 ### Using a custom alphabet
 
-Generated IDs will be only contain characters from the chosen alphabet, which
-is sensitive to both case and order.
+Generated IDs will only contain characters from the chosen alphabet, which is
+sensitive to both case and order.
 
 ```elixir
 iex> {:ok, sqids} = Sqids.new(alphabet: "cdefhjkmnprtvwxy2345689")
@@ -159,13 +164,14 @@ iex> ^numbers = Sqids.decode!(sqids, id)
 
 In order to decode IDs back, they need to be in the same alphabet.
 
-For practical reasons, the standard limits alphabets to ASCII characters.
+For practical reasons, the standard limits custom alphabets to ASCII
+characters.
 
-(Thanks to Ben Wheeler for his
-suggestion for [a set of unambiguous-looking characters](https://stackoverflow.com/questions/11919708/set-of-unambiguous-looking-letters-numbers-for-user-input/58098360#58098360)
+(Thanks to Ben Wheeler for his suggestion for [a set of unambiguous looking
+characters](https://stackoverflow.com/questions/11919708/set-of-unambiguous-looking-letters-numbers-for-user-input/58098360#58098360)
 on Stack Overflow.)
 
-### Profanity: preventing specific words within the generated IDs
+### Profanity: excluding specific words from the IDs
 
 Place [the ID generated with defaults](#default-configuration) in the
 blocklist, replacing [the latter](https://github.com/sqids/sqids-blocklist/) in

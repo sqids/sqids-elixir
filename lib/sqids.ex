@@ -3,7 +3,7 @@ defmodule Sqids do
   Sqids API
 
   > ℹ️ Check out the [docs entry page](readme.html) for an example on how to `use
-  > Sqids` to generate a module that bypasses the need to pass along `sqids` context
+  > Sqids` to generate functions that bypass the need to pass along `sqids` context
   > on every encode or decode call.
   """
 
