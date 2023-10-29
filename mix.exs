@@ -10,7 +10,7 @@ defmodule Sqids.MixProject do
       version: @version,
       description: description(),
       elixir: "~> 1.7",
-      start_permanent: Mix.env() == :prod,
+      start_permanent: Mix.env() === :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
       elixirc_options: [
@@ -68,7 +68,7 @@ defmodule Sqids.MixProject do
   end
 
   defp elixirc_paths(env) do
-    if env == :test do
+    if env === :test do
       ["lib", "test/extra"]
     else
       ["lib"]

@@ -272,7 +272,7 @@ defmodule Sqids do
   defp encode_input_numbers_recur([input | next], alphabet, acc) do
     encoded_number = encode_input_number(input, alphabet)
 
-    if next != [] do
+    if next !== [] do
       separator = Alphabet.char_at!(alphabet, 0)
       alphabet = Alphabet.shuffle(alphabet)
       acc = [acc, encoded_number, separator]

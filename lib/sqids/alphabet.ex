@@ -96,7 +96,7 @@ defmodule Sqids.Alphabet do
 
   @spec is_known_symbol(t(), String.t()) :: boolean
   def is_known_symbol(%{} = alphabet, <<arg_char>>) do
-    Enum.any?(alphabet, fn {_index, char} -> arg_char == char end)
+    Enum.any?(alphabet, fn {_index, char} -> arg_char === char end)
   end
 
   def is_known_symbol(%{} = _alphabet, multibyte) when byte_size(multibyte) > 1 do
@@ -108,7 +108,7 @@ defmodule Sqids.Alphabet do
     # It would be nice to optimize this.
 
     index =
-      Enum.find_value(alphabet, fn {index, byte} -> byte == char and index end)
+      Enum.find_value(alphabet, fn {index, byte} -> byte === char and index end)
 
     assert index !== nil
     index
@@ -127,7 +127,7 @@ defmodule Sqids.Alphabet do
   defp validate_alphabet_graphemes_are_not_multibyte(alphabet_str) do
     alphabet_graphemes = String.graphemes(alphabet_str)
 
-    case Enum.filter(alphabet_graphemes, &(byte_size(&1) != 1)) do
+    case Enum.filter(alphabet_graphemes, &(byte_size(&1) !== 1)) do
       [] ->
         :ok
 
@@ -177,7 +177,7 @@ defmodule Sqids.Alphabet do
       |> Enum.map(fun)
       |> Map.new()
 
-    # assert map_size(mapped_alphabet) == map_size(alphabet)
+    # assert map_size(mapped_alphabet) === map_size(alphabet)
     mapped_alphabet
   end
 end
