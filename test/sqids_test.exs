@@ -38,6 +38,9 @@ defmodule SqidsTest do
       module_content =
         quote do
           use Sqids
+
+          @impl true
+          def child_spec, do: child_spec([])
         end
 
       Module.create(module_name, module_content, Macro.Env.location(__ENV__))
