@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `new!/0` and `new!/1` to ease storing context in module attributes
 
+### Fixed
+
+- unwarranted risk of new future warnings breaking the builds of sqids
+  dependents
+
 ## [0.1.0] - 2023-10-28
 
 ### Added

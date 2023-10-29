@@ -5,17 +5,17 @@ defmodule Sqids.MixProject do
   @source_url "https://github.com/sqids/sqids-elixir"
 
   def project do
+    mix_env = Mix.env()
+
     [
       app: :sqids,
       version: @version,
       description: description(),
       elixir: "~> 1.7",
-      start_permanent: Mix.env() === :prod,
+      start_permanent: mix_env === :prod,
       deps: deps(),
-      elixirc_paths: elixirc_paths(Mix.env()),
-      elixirc_options: [
-        warnings_as_errors: true
-      ],
+      elixirc_paths: elixirc_paths(mix_env),
+      elixirc_options: elixirc_options(mix_env),
       docs: docs(),
       test_coverage: [
         summary: [
@@ -72,6 +72,14 @@ defmodule Sqids.MixProject do
       ["lib", "test/extra"]
     else
       ["lib"]
+    end
+  end
+
+  defp elixirc_options(env) do
+    if env === :test do
+      [warnings_as_errors: true]
+    else
+      []
     end
   end
 
