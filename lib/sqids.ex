@@ -100,22 +100,6 @@ defmodule Sqids do
   end
 
   @doc """
-  Encodes zero or more `numbers` into an `id`, according to `sqids`'s alphabet,
-  blocklist, and minimum length. Raises in case of error.
-  """
-  @spec encode!(sqids, numbers) :: id
-        when sqids: t(), numbers: enumerable(non_neg_integer), id: String.t()
-  def encode!(sqids, numbers) do
-    case encode(sqids, numbers) do
-      {:ok, string} ->
-        string
-
-      {:error, {:all_id_generation_attempts_were_censored, _nr_of_attempts} = reason} ->
-        raise error_reason_to_string(reason)
-    end
-  end
-
-  @doc """
   Tries to encode zero or more `numbers` into as an `id`, according to
   `sqids`'s alphabet, blocklist, and minimum length. Returns an error
   otherwise.
@@ -133,6 +117,22 @@ defmodule Sqids do
   end
 
   def encode(sqids, _numbers), do: :erlang.error({:badarg, sqids})
+
+  @doc """
+  Encodes zero or more `numbers` into an `id`, according to `sqids`'s alphabet,
+  blocklist, and minimum length. Raises in case of error.
+  """
+  @spec encode!(sqids, numbers) :: id
+        when sqids: t(), numbers: enumerable(non_neg_integer), id: String.t()
+  def encode!(sqids, numbers) do
+    case encode(sqids, numbers) do
+      {:ok, string} ->
+        string
+
+      {:error, {:all_id_generation_attempts_were_censored, _nr_of_attempts} = reason} ->
+        raise error_reason_to_string(reason)
+    end
+  end
 
   @doc """
   Decodes an `id` into zero or more `numbers` according to `sqids`'s alphabet.
