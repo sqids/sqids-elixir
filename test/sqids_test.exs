@@ -696,7 +696,7 @@ end
 
 # doctest_file was added on Elixir 1.15
 if Version.match?(System.version(), "~> 1.15") do
-  defmodule Example do
+  defmodule FileDoctests do
     @moduledoc false
     use ExUnit.Case, async: true
 
