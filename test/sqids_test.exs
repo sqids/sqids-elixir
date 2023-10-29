@@ -27,6 +27,11 @@ defmodule SqidsTest do
       end
     end
 
+    def new_sqids(:"Direct API!", opts) do
+      sqids = Sqids.new!(opts)
+      {:ok, {:direct_api, sqids}}
+    end
+
     def new_sqids(:"Using module", opts) do
       module_name = String.to_atom("#{__MODULE__}.UsingModule.#{:rand.uniform(Bitwise.<<<(1, 64))}")
 
@@ -488,7 +493,41 @@ defmodule SqidsTest do
 
     import SqidsTest.Shared
 
-    for access_type <- [:"Direct API", :"Using module"] do
+    test "new!/0: it works" do
+      sqids = Sqids.new!()
+
+      numbers = [1, 2, 3]
+      id = "86Rf07"
+
+      assert Sqids.encode(sqids, numbers) === {:ok, id}
+      assert Sqids.decode!(sqids, id) === numbers
+    end
+
+    test "new!/1: it works with valid opts" do
+      {:ok, instance} = new_sqids(:"Direct API!")
+
+      numbers = [1, 2, 3]
+      id = "86Rf07"
+
+      assert encode!(instance, numbers) === id
+      assert decode!(instance, id) === numbers
+    end
+
+    test "new!/1: errors raised" do
+      assert_raise ArgumentError, "Alphabet contains multibyte graphemes: [\"ë\"]", fn ->
+        new_sqids(:"Direct API!", alphabet: "ë1092")
+      end
+
+      assert_raise ArgumentError, "Alphabet contains repeated graphemes: [\"a\"]", fn ->
+        new_sqids(:"Direct API!", alphabet: "aabcdefg")
+      end
+
+      assert_raise ArgumentError, "Alphabet is too small: [min_length: 3, alphabet: \"ab\"]", fn ->
+        new_sqids(:"Direct API!", alphabet: "ab")
+      end
+    end
+
+    for access_type <- [:"Direct API", :"Direct API!", :"Using module"] do
       test "#{access_type}: new/1: options is not a proper list" do
         at = unquote(access_type)
         assert_raise ArgumentError, "Opts not a proper list: :not_a_list", fn -> new_sqids(at, :not_a_list) end

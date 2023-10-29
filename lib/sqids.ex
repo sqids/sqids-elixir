@@ -2,9 +2,11 @@ defmodule Sqids do
   @moduledoc """
   Sqids API
 
-  > ℹ️ Check out the [docs entry page](readme.html) for an example on how to `use
-  > Sqids` to generate functions that bypass the need to pass along `sqids` context
-  > on every encode or decode call.
+  > ℹ️ Check out the [docs entry page](readme.html) on how to make
+  > `Sqids` easier to use by not passing the context on every encode/decode
+  > call, through either:
+  > * creation of context at compile time under a module attribute,
+  > * or the `use Sqids` macro to generate functions that retrieve context transparently.
   """
 
   alias Sqids.Alphabet
@@ -97,6 +99,20 @@ defmodule Sqids do
 
   def new(opts) do
     raise %ArgumentError{message: "Opts not a proper list: #{inspect(opts)}"}
+  end
+
+  @doc """
+  Like `new/0` and `new/1` but raises in case of error.
+  """
+  @spec new!(opts()) :: t()
+  def new!(opts \\ []) do
+    case new(opts) do
+      {:ok, sqids} ->
+        sqids
+
+      {:error, reason} ->
+        raise %ArgumentError{message: error_reason_to_string(reason)}
+    end
   end
 
   @doc """

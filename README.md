@@ -79,21 +79,47 @@ iex> ^numbers = Sqids.decode!(sqids, id)
 > canonical, you have to re-encode decoded numbers and check that the
 > generated ID matches.
 
-### Convenience: placing Sqids under your app's supervision tree
+### Convenience: create context at compile time
 
-This allows you to encode and decode IDs without managing context.
+Having to pass `sqids` context on every encode and decode call can be
+cumbersome.
 
-Functions are generated which retrieve the underlying Sqids context
-transparently. The context is stored in a uniquely named
-[`persistent_term`](https://www.erlang.org/doc/man/persistent_term), managed by
-a uniquely named process. Both names are derived from your module's.
+To work around this, you can create context with `new!/0` or `new/1` at compile
+time if all options are either default or known at that moment:
 
 ```elixir
-iex> defmodule MyApp.Sqids do
+iex> defmodule MyApp.CompileTimeSqids do
+iex>   @context Sqids.new!()
+iex>   def encode!(numbers), do: Sqids.encode!(@context, numbers)
+iex>   def decode!(id), do: Sqids.decode!(@context, id)
+iex> end
+iex>
+iex> numbers = [1, 2, 3]
+iex> id = MyApp.CompileTimeSqids.encode!(numbers)
+iex> ^id = "86Rf07"
+iex> ^numbers = MyApp.CompileTimeSqids.decode!(id)
+```
+
+### Convenience: place context under your supervision tree
+
+This also allows you to encode and decode IDs without managing context.
+
+If not options are known at compile time but you'd still like to not pass
+context on every encode and decode call, you can `use Sqids`, which will
+generate functions that retrieve the underlying context transparently and call
+`Sqids` for you.
+
+The context is stored in a uniquely named
+[`persistent_term`](https://www.erlang.org/doc/man/persistent_term), managed by
+a uniquely named process, which is to be placed under your application's
+supervision tree. Both names are derived from your module's.
+
+```elixir
+iex> defmodule MyApp.SupervisedSqids do
 iex>   use Sqids
 iex>   # Functions encrypt/1, encrypt!/1, decrypt/1, decrypt!/1, etc
 iex>   # will be generated.
-iex>   
+iex>
 iex>   @impl true
 iex>   def child_spec() do
 iex>       child_spec([
@@ -109,7 +135,7 @@ iex> defmodule MyApp.Application do
 iex>   # ...
 iex>   def start(_type, _args) do
 iex>      children = [
-iex>        MyApp.Sqids,
+iex>        MyApp.SupervisedSqids,
 iex>        # ...
 iex>      ]
 iex>
@@ -121,15 +147,15 @@ iex>
 iex>
 iex> {:ok, _} = MyApp.Application.start(:normal, [])
 iex> numbers = [1, 2, 3]
-iex> id = MyApp.Sqids.encode!(numbers)
+iex> id = MyApp.SupervisedSqids.encode!(numbers)
 iex> ^id = "86Rf07"
-iex> ^numbers = MyApp.Sqids.decode!(id)
+iex> ^numbers = MyApp.SupervisedSqids.decode!(id)
 ```
 
 ### Custom configuration
 
-Examples of custom configuration follow. All options are applicable to the
-generated module shown before.
+Examples of custom configuration follow. All options are applicable to the two
+convenient ways of creating context shown above.
 
 Note that different options can be used together for further customization.
 Check the [API reference](https://hexdocs.pm/sqids/api-reference.html) for
