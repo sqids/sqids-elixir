@@ -42,23 +42,13 @@ defmodule Sqids do
   defstruct [:alphabet, :min_length, :blocklist]
 
   @typedoc "Context for Sqids"
-  @opaque t :: ctx
-
-  #
-  # Why not place the context definition under `t/0`?
-  #
-  # The spec for API functions for encode, decode, etc accept either `t/0` or
-  # `ctx/0`, so that Dialyzer doesn't warn when the context is created at
-  # compile time as a module attribute - becoming "hardcoded" from Dialyzer's
-  # point of view - and then used, which would violate type opacity.
-  @typep ctx ::
-           %__MODULE__{
-             alphabet: Alphabet.t(),
-             # the minimum length IDs should be
-             min_length: non_neg_integer,
-             # words that shouldn't appear anywhere in the IDs
-             blocklist: Blocklist.t()
-           }
+  @opaque t :: %__MODULE__{
+            alphabet: Alphabet.t(),
+            # the minimum length IDs should be
+            min_length: non_neg_integer,
+            # words that shouldn't appear anywhere in the IDs
+            blocklist: Blocklist.t()
+          }
 
   ## Guards
 
@@ -133,7 +123,7 @@ defmodule Sqids do
   otherwise.
   """
   @spec encode(sqids, numbers) :: {:ok, id} | {:error, term}
-        when sqids: t() | ctx(), numbers: enumerable(non_neg_integer), id: String.t()
+        when sqids: t(), numbers: enumerable(non_neg_integer), id: String.t()
   def encode(%Sqids{} = sqids, numbers) do
     case validate_numbers(numbers) do
       {:ok, numbers_list} ->
@@ -151,7 +141,7 @@ defmodule Sqids do
   blocklist, and minimum length. Raises in case of error.
   """
   @spec encode!(sqids, numbers) :: id
-        when sqids: t() | ctx(), numbers: enumerable(non_neg_integer), id: String.t()
+        when sqids: t(), numbers: enumerable(non_neg_integer), id: String.t()
   def encode!(sqids, numbers) do
     case encode(sqids, numbers) do
       {:ok, string} ->
@@ -170,7 +160,7 @@ defmodule Sqids do
   being returned.
   """
   @spec decode!(sqids, id) :: numbers
-        when sqids: t() | ctx(), id: String.t(), numbers: [non_neg_integer]
+        when sqids: t(), id: String.t(), numbers: [non_neg_integer]
   def decode!(sqids, id) do
     case decode(sqids, id) do
       {:ok, numbers} ->
