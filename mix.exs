@@ -44,7 +44,7 @@ defmodule Sqids.MixProject do
   end
 
   defp maybe_credo_dep do
-    if Version.match?(System.version(), "~> 1.12") do
+    if elixir_vsn_match?("~> 1.12") do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     else
       []
@@ -52,7 +52,7 @@ defmodule Sqids.MixProject do
   end
 
   defp maybe_dialyxir_dep do
-    if Version.match?(System.version(), "~> 1.12") do
+    if elixir_vsn_match?("~> 1.12") do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
     else
       []
@@ -60,7 +60,7 @@ defmodule Sqids.MixProject do
   end
 
   defp maybe_styler_dep do
-    if Version.match?(System.version(), "~> 1.14") do
+    if elixir_vsn_match?("~> 1.14") do
       {:styler, "~> 0.8", only: [:dev, :test], runtime: false}
     else
       []
@@ -108,4 +108,6 @@ defmodule Sqids.MixProject do
       }
     ]
   end
+
+  defp elixir_vsn_match?(requirement), do: Version.match?(System.version(), requirement)
 end
