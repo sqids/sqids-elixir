@@ -88,7 +88,7 @@ iex> ^numbers = Sqids.decode!(sqids, id)
 Having to pass `sqids` context on every encode and decode call can be
 cumbersome.
 
-To work around this, you can create context with `new!/0` or `new/1` at compile
+To work around this, you can create context with `new!/0` or `new!/1` at compile
 time if all options are either default or known at that moment:
 
 ```elixir
