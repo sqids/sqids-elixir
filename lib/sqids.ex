@@ -174,6 +174,7 @@ defmodule Sqids do
   ## Internal Functions
 
   @doc false
+  @spec default_alphabet :: String.t()
   def default_alphabet, do: @default_alphabet
 
   defp validate_min_length(min_length) do
