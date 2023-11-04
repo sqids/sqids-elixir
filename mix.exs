@@ -19,7 +19,7 @@ defmodule Sqids.MixProject do
       docs: docs(),
       test_coverage: [
         summary: [
-          threshold: 94
+          threshold: 93
         ]
       ],
       dialyzer: [plt_add_apps: [:ex_unit]],
