@@ -217,6 +217,11 @@ iex> ^id = "se8ojk" # see how "86Rf07" was censored
 iex> ^numbers = Sqids.decode!(sqids, id)
 ```
 
+## 📚 API Reference
+
+The API reference can be found on
+[HexDocs](https://hexdocs.pm/sqids/api-reference.html).
+
 ## 📝 License
 
 [MIT](LICENSE)
