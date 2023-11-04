@@ -93,7 +93,7 @@ defmodule Sqids.MixProject do
       extras: [
         "CHANGELOG.md",
         "LICENSE",
-        "README.md"
+        "README.md": [title: "Sqids"]
       ]
     ]
   end
