@@ -1,10 +1,10 @@
 # [Sqids Elixir](https://sqids.org/elixir)
 
-[![](https://img.shields.io/hexpm/v/sqids.svg?style=flat)](https://hex.pm/packages/sqids)
-[![](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml/badge.svg)](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml)
+[![Hex downloads](https://img.shields.io/hexpm/dt/sqids.svg)](https://hex.pm/packages/sqids)
+[![License](https://img.shields.io/hexpm/l/sqids.svg)](https://github.com/sqids/sqids-elixir/blob/main/LICENSE)
 [![Elixir Versions](https://img.shields.io/badge/Elixir-1.7%20to%201.15-blue)](https://elixir-lang.org/)
 [![Erlang Versions](https://img.shields.io/badge/Erlang%2FOTP-21.3%20to%2026-blue)](https://www.erlang.org)
-
+[![CI status](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml/badge.svg)](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml)
 
 [Sqids](https://sqids.org/elixir) (*pronounced "squids"*) for Elixir is a
 library for generating YouTube-looking IDs from numbers. These IDs are short,
@@ -49,6 +49,10 @@ identifiers in your software as alphanumeric strings.
 * 🍻 Small library with a permissive license
 
 ## 🚀 Getting started
+
+[![Latest version](https://img.shields.io/hexpm/v/sqids.svg?style=flat)](https://hex.pm/packages/sqids)
+[![API reference](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/sqids/)
+[![Last commit](https://img.shields.io/github/last-commit/sqids/sqids-elixir.svg)](https://github.com/sqids/sqids-elixir/commits/main)
 
 The package can be installed by adding `sqids` to your list of dependencies in
 `mix.exs`:
