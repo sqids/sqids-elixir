@@ -36,7 +36,7 @@ identifiers in your software as alphanumeric strings.
 * **User IDs** generated in sequence, or equivalents, which can be decoded,
   revealing user count and/or business growth
 
-## Features:
+## Features
 
 * 🆔 Generate short IDs from non-negative integers
 * 🤬 Avoid common profanity in generated IDs
