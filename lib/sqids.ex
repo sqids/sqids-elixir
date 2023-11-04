@@ -177,6 +177,15 @@ defmodule Sqids do
   @spec default_alphabet :: String.t()
   def default_alphabet, do: @default_alphabet
 
+  @doc false
+  @spec dialyzed_ctx(%__MODULE__{}) :: t
+  def dialyzed_ctx(%__MODULE__{} = sqids) do
+    # This function is required to work around Dialyzer warnings on violating
+    # type opacity when Sqids context is placed in a module attribute, since it
+    # becomes "hardcoded" from Dialyzer's point of view.
+    sqids
+  end
+
   defp validate_min_length(min_length) do
     if not is_integer(min_length) or min_length not in @min_length_range do
       {:error, {:min_length_is_not_an_integer_in_range, value: min_length, range: @min_length_range}}

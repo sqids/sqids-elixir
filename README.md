@@ -93,9 +93,11 @@ time if all options are either default or known at that moment:
 
 ```elixir
 iex> defmodule MyApp.CompileTimeSqids do
+iex>   import Sqids.Hacks, only: [dialyzed_ctx: 1]
 iex>   @context Sqids.new!()
-iex>   def encode!(numbers), do: Sqids.encode!(@context, numbers)
-iex>   def decode!(id), do: Sqids.decode!(@context, id)
+iex>
+iex>   def encode!(numbers), do: Sqids.encode!(dialyzed_ctx(@context), numbers)
+iex>   def decode!(id), do: Sqids.decode!(dialyzed_ctx(@context), id)
 iex> end
 iex>
 iex> numbers = [1, 2, 3]

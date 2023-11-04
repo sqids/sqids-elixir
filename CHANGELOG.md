@@ -9,8 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- workaround for Dialyzer warnings when placing context in module attribute
 - to API reference: oldest `sqids` version on which each function, type and
   callback is available
+
+### Fixed
+
+- Dialyzer warnings in example of `sqids` context under module attribute
 
 ## [0.1.1] - 2023-10-29
 
