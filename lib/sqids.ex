@@ -8,6 +8,7 @@ defmodule Sqids do
   > * creation of context at compile time under a module attribute,
   > * or the `use Sqids` macro to generate functions that retrieve context transparently.
   """
+  @moduledoc since: "0.1.0"
 
   alias Sqids.Alphabet
   alias Sqids.Blocklist
@@ -104,6 +105,7 @@ defmodule Sqids do
   @doc """
   Like `new/0` and `new/1` but raises in case of error.
   """
+  @doc since: "0.1.1"
   @spec new!(opts()) :: t()
   def new!(opts \\ []) do
     case new(opts) do

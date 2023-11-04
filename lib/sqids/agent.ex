@@ -4,6 +4,7 @@ defmodule Sqids.Agent do
   Like stdlib's [Agent](https://hexdocs.pm/elixir/1.15/Agent.html) but using
   OTP's [`persistent_term`](https://www.erlang.org/doc/man/persistent_term).
   """
+  @moduledoc since: "0.1.0"
 
   use GenServer
 
