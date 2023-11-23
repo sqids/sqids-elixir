@@ -123,7 +123,7 @@ supervision tree. Both names are derived from your module's.
 ```elixir
 iex> defmodule MyApp.SupervisedSqids do
 iex>   use Sqids
-iex>   # Functions encrypt/1, encrypt!/1, decrypt/1, decrypt!/1, etc
+iex>   # Functions encode/1, encode!/1, decode/1, decode!/1, etc
 iex>   # will be generated.
 iex>
 iex>   @impl true
