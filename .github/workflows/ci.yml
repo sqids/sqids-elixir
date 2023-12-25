@@ -13,8 +13,8 @@ on:
   workflow_dispatch: # enables "click to run" button
 
 env:
-  ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE: '1.15' # Should be highest in matrix
-  ELIXIR_VERSIONS_ON_WHICH_TO_RUN_DIALYZER: "['1.12', '1.13', '1.14', '1.15']"
+  ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE: '1.16' # Should be highest in matrix
+  ELIXIR_VERSIONS_ON_WHICH_TO_RUN_DIALYZER: "['1.12', '1.13', '1.14', '1.15', '1.16']"
 
 jobs:
   ci:
@@ -32,7 +32,8 @@ jobs:
           '1.12',
           '1.13',
           '1.14',
-          '1.15'
+          '1.15',
+          '1.16'
         ]
         os: ['ubuntu-20.04']
     steps:
