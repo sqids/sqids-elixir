@@ -32,8 +32,8 @@ defmodule Sqids.Blocklist do
     end
   end
 
-  @spec is_blocked_id(t(), String.t()) :: boolean()
-  def is_blocked_id(%__MODULE__{} = blocklist, id) do
+  @spec blocked_id?(t(), String.t()) :: boolean()
+  def blocked_id?(%__MODULE__{} = blocklist, id) do
     downcased_id = String.downcase(id)
     downcased_size = byte_size(downcased_id)
 

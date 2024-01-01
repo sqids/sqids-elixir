@@ -94,12 +94,12 @@ defmodule Sqids.Alphabet do
     Enum.reduce((size - 1)..0, _acc = [], fn index, acc -> [char_at!(alphabet, index) | acc] end)
   end
 
-  @spec is_known_symbol(t(), String.t()) :: boolean
-  def is_known_symbol(%{} = alphabet, <<arg_char>>) do
+  @spec known_symbol?(t(), String.t()) :: boolean
+  def known_symbol?(%{} = alphabet, <<arg_char>>) do
     Enum.any?(alphabet, fn {_index, char} -> arg_char === char end)
   end
 
-  def is_known_symbol(%{} = _alphabet, multibyte) when byte_size(multibyte) > 1 do
+  def known_symbol?(%{} = _alphabet, multibyte) when byte_size(multibyte) > 1 do
     false
   end
 

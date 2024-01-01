@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Elixir 1.16 to CI
 - OTP 26.2 to CI
 
+### Fixed
+
+- Credo warnings about [predicate function
+  names](https://hexdocs.pm/credo/Credo.Check.Readability.PredicateFunctionNames.html)
+
 ## [0.1.2] - 2023-11-04
 
 ### Added
