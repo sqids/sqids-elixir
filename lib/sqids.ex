@@ -206,7 +206,7 @@ defmodule Sqids do
   end
 
   defp validate_numbers(numbers) do
-    Enum.find(numbers, &(not is_valid_number(&1)))
+    Enum.find(numbers, &(not valid_number?(&1)))
   catch
     :error, %Protocol.UndefinedError{value: ^numbers} ->
       {:error, {:numbers_not_enumerable, numbers}}
@@ -219,7 +219,7 @@ defmodule Sqids do
       {:error, {:number_is_not_a_non_negative_integer, invalid_number}}
   end
 
-  defp is_valid_number(number), do: is_integer(number) and number >= 0
+  defp valid_number?(number), do: is_integer(number) and number >= 0
 
   # if no numbers passed, return an empty string
   @spec encode_numbers(t(), [non_neg_integer]) :: {:ok, String.t()} | {:error, term}
@@ -267,7 +267,7 @@ defmodule Sqids do
 
     id = handle_min_length_requirement(id_iodata, alphabet, sqids.min_length)
 
-    if Blocklist.is_blocked_id(sqids.blocklist, id) do
+    if Blocklist.blocked_id?(sqids.blocklist, id) do
       # ID has a blocked word, restart with a +1 attempt_index
       attempt_to_encode_numbers(sqids, list, attempt_index + 1)
     else
@@ -391,7 +391,7 @@ defmodule Sqids do
   end
 
   defp are_all_chars_in_id_known(id, alphabet) do
-    id |> String.graphemes() |> Enum.all?(&Alphabet.is_known_symbol(alphabet, &1))
+    id |> String.graphemes() |> Enum.all?(&Alphabet.known_symbol?(alphabet, &1))
   end
 
   @spec decode(t(), String.t()) :: {:ok, [non_neg_integer]}

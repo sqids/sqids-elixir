@@ -584,7 +584,7 @@ defmodule SqidsTest do
     test "Blocklist: short words are not blocked" do
       alphabet_str = "abc"
       {:ok, blocklist} = Sqids.Blocklist.new(["abc"], _min_word_length = 4, alphabet_str)
-      refute Sqids.Blocklist.is_blocked_id(blocklist, "abc")
+      refute Sqids.Blocklist.blocked_id?(blocklist, "abc")
     end
 
     test "Stopped agent" do
