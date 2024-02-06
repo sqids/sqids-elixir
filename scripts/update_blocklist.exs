@@ -2,7 +2,6 @@
 
 defmodule Sqids.BlocklistUpdater do
   @moduledoc false
-  import ExUnit.Assertions
 
   require Logger
 
