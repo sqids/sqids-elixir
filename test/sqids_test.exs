@@ -20,7 +20,7 @@ defmodule SqidsTest do
 
     def new_sqids(:"Direct API", opts) do
       case Sqids.new(opts) do
-        {:ok, sqids} ->
+        {:ok, %Sqids{} = sqids} ->
           {:ok, {:direct_api, sqids}}
 
         {:error, _} = error ->
