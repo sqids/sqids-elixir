@@ -2,6 +2,17 @@
 name: CI
 
 on:
+  pull_request:
+    types:
+      - 'opened'
+      - 'reopened'
+    paths:
+      - '.github/workflows/ci.yml'
+      - 'lib/**'
+      - 'mix.*'
+      - 'priv/**'
+      - 'test/**'
+
   push:
     paths:
       - '.github/workflows/ci.yml'
