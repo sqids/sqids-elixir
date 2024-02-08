@@ -109,7 +109,7 @@ defmodule Sqids.Agent do
     # Namely, when the reason for the crash - whether in us or somewhere else
     # in the supervision tree - hasn't gone away by simply restarting.
 
-    if not crashing?(reason) do
+    unless crashing?(reason) do
       shared_state_key = state(state, :shared_state_key)
       :persistent_term.erase(shared_state_key)
     end

@@ -13,5 +13,5 @@
   "nimble_parsec": {:hex, :nimble_parsec, "1.4.0", "51f9b613ea62cfa97b25ccc2c1b4216e81df970acd8e16e8d1bdc58fef21370d", [:mix], [], "hexpm", "9c565862810fb383e9838c1dd2d7d2c437b3d13b267414ba6af33e50d2d1cf28"},
   "recon": {:hex, :recon, "2.5.4", "05dd52a119ee4059fa9daa1ab7ce81bc7a8161a2f12e9d42e9d551ffd2ba901c", [:mix, :rebar3], [], "hexpm", "e9ab01ac7fc8572e41eb59385efeb3fb0ff5bf02103816535bacaedf327d0263"},
   "sqids_blocklist": {:git, "https://github.com/sqids/sqids-blocklist.git", "0db61e23c392709c70766e07f296fc5209f20bcc", [branch: "main"]},
-  "styler": {:hex, :styler, "0.11.1", "1bf6a13f49c00c4e77855cd2dbd6fe5518b6bfb977e76fdb2fa088d64f839194", [:mix], [], "hexpm", "8d995b3e7a787645a09a9a7382e17fb99d4bb63f4cf8390a2aaf0afa8d4b2f7d"},
+  "styler": {:hex, :styler, "0.11.9", "2595393b94e660cd6e8b582876337cc50ff047d184ccbed42fdad2bfd5d78af5", [:mix], [], "hexpm", "8b7806ba1fdc94d0a75127c56875f91db89b75117fcc67572661010c13e1f259"},
 }
