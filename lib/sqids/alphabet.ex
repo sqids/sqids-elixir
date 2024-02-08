@@ -173,9 +173,7 @@ defmodule Sqids.Alphabet do
 
   defp map(alphabet, fun) do
     mapped_alphabet =
-      alphabet
-      |> Enum.map(fun)
-      |> Map.new()
+      Map.new(alphabet, fun)
 
     # assert map_size(mapped_alphabet) === map_size(alphabet)
     mapped_alphabet
