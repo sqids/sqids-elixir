@@ -20,7 +20,7 @@ defmodule SqidsTest do
 
     def new_sqids(:"Direct API", opts) do
       case Sqids.new(opts) do
-        {:ok, sqids} ->
+        {:ok, %Sqids{} = sqids} ->
           {:ok, {:direct_api, sqids}}
 
         {:error, _} = error ->
@@ -140,6 +140,14 @@ defmodule SqidsTest do
     use ExUnit.Case, async: true
 
     import SqidsTest.Shared
+
+    test "creating blocklist" do
+      expected_matches = ["aa", "ab", "ac"]
+      {:ok, %Sqids.Blocklist{} = blocklist} = Sqids.Blocklist.new(expected_matches, 1, "abc")
+
+      assert blocklist.min_word_length == 1
+      assert ^expected_matches = blocklist.matches_anywhere
+    end
 
     for access_type <- [:"Direct API", :"Using module"] do
       test "#{access_type}: if no custom blocklist param, use the default blocklist" do

@@ -1,6 +1,5 @@
 defmodule Sqids.Alphabet do
   @moduledoc false
-  import ExUnit.Assertions
 
   @min_alphabet_length 3
 
@@ -61,9 +60,6 @@ defmodule Sqids.Alphabet do
     alphabet_size = map_size(alphabet)
 
     map(alphabet, fn {index, char} ->
-      # assert index >= 0
-      # assert index < map_size(alphabet)
-
       new_index =
         if index < split_index do
           alphabet_size - split_index + index
@@ -71,8 +67,6 @@ defmodule Sqids.Alphabet do
           index - split_index
         end
 
-      # assert new_index >= 0
-      # assert new_index < map_size(alphabet)
       {new_index, char}
     end)
   end
@@ -82,9 +76,7 @@ defmodule Sqids.Alphabet do
     alphabet_size = map_size(alphabet)
 
     map(alphabet, fn {index, char} ->
-      # assert index < alphabet_size
       new_index = alphabet_size - index - 1
-      # assert new_index >= 0
       {new_index, char}
     end)
   end
@@ -106,12 +98,10 @@ defmodule Sqids.Alphabet do
   @spec index_of!(t(), byte) :: index
   def index_of!(%{} = alphabet, char) do
     # It would be nice to optimize this.
-
-    index =
-      Enum.find_value(alphabet, fn {index, byte} -> byte === char and index end)
-
-    assert index !== nil
-    index
+    case Enum.find_value(alphabet, fn {index, byte} -> byte === char and index end) do
+      nil -> raise "index was nil"
+      index -> index
+    end
   end
 
   ## Internal
