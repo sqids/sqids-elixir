@@ -74,12 +74,13 @@ defmodule Sqids do
     min_length = opts[:min_length] || @default_min_length
     blocklist_words = opts[:blocklist] || read_default_blocklist_words!()
 
-    with {:ok, shuffled_alphabet} <- Alphabet.new_shuffled(alphabet_str),
+    with {:ok, alphabet} <- Alphabet.new(alphabet_str),
+         alphabet = Alphabet.shuffle(alphabet),
          :ok <- validate_min_length(min_length),
          {:ok, blocklist} <- Blocklist.new(blocklist_words, @min_blocklist_word_length, alphabet_str) do
       {:ok,
        %Sqids{
-         alphabet: shuffled_alphabet,
+         alphabet: alphabet,
          min_length: min_length,
          blocklist: blocklist
        }}

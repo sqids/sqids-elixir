@@ -16,13 +16,13 @@ defmodule Sqids.Alphabet do
 
   ## API
 
-  @spec new_shuffled(term) :: {:ok, t} | {:error, creation_error}
-  def new_shuffled(alphabet_str) do
+  @spec new(term) :: {:ok, t} | {:error, creation_error}
+  def new(alphabet_str) do
     with :ok <- validate_alphabet_is_utf8_string(alphabet_str),
          :ok <- validate_alphabet_graphemes_are_not_multibyte(alphabet_str),
          :ok <- validate_alphabet_length(alphabet_str),
          :ok <- validate_alphabet_has_unique_chars(alphabet_str) do
-      alphabet = alphabet_str |> new_from_valid_str!() |> shuffle()
+      alphabet = new_from_valid_str!(alphabet_str)
       {:ok, alphabet}
     else
       {:error, _} = error ->
