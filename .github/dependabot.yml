@@ -8,3 +8,10 @@ updates:
       # Consider increasing frequency if Sqids ever gets dependencies that are
       # not dev-only.
       interval: "monthly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    reviewers:
+      - "g-andrade"
+    schedule:
+      interval: "monthly"
