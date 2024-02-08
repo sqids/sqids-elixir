@@ -199,15 +199,14 @@ In order to decode IDs back, they need to be in the same alphabet.
 For practical reasons, the standard limits custom alphabets to ASCII
 characters.
 
-(Thanks to Ben Wheeler for his suggestion for [a set of unambiguous looking
+(Thanks to @benjiwheeler for his suggestion for [a set of unambiguous looking
 characters](https://stackoverflow.com/questions/11919708/set-of-unambiguous-looking-letters-numbers-for-user-input/58098360#58098360)
 on Stack Overflow.)
 
 ### Profanity: excluding specific words from the IDs
 
-Place [the ID generated with defaults](#default-configuration) in the
-blocklist, replacing [the latter](https://github.com/sqids/sqids-blocklist/) in
-the process.
+As an example, set [the ID generated with default
+options](#default-configuration) as the blocklist.
 
 ```elixir
 iex> {:ok, sqids} = Sqids.new(blocklist: ["86Rf07"])
