@@ -8,7 +8,7 @@ defmodule Sqids.Alphabet do
   @opaque t :: %{required(index) => byte}
   @type index :: non_neg_integer
 
-  @type new_error_reason ::
+  @type creation_error ::
           {:alphabet_is_not_an_utf8_string, term}
           | {:alphabet_contains_multibyte_graphemes, [String.grapheme(), ...]}
           | {:alphabet_is_too_small, [min_length: pos_integer, alphabet: String.t()]}
@@ -16,7 +16,7 @@ defmodule Sqids.Alphabet do
 
   ## API
 
-  @spec new_shuffled(term) :: {:ok, t} | {:error, new_error_reason}
+  @spec new_shuffled(term) :: {:ok, t} | {:error, creation_error}
   def new_shuffled(alphabet_str) do
     with :ok <- validate_alphabet_is_utf8_string(alphabet_str),
          :ok <- validate_alphabet_graphemes_are_not_multibyte(alphabet_str),
