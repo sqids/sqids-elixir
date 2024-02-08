@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- decoding exception when ExUnit wasn't imported by caller (thanks to
+  https://github.com/tshakah)
+- typos in README (thanks to https://github.com/hanifanazka)
 - Credo warnings about [predicate function
   names](https://hexdocs.pm/credo/Credo.Check.Readability.PredicateFunctionNames.html)
 
