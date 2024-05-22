@@ -8,6 +8,7 @@ on:
       - 'reopened'
     paths:
       - '.github/workflows/ci.yml'
+      - '.github/workflows/elixir_version_to_otp_version.json'
       - 'lib/**'
       - 'mix.*'
       - 'priv/**'
@@ -16,6 +17,7 @@ on:
   push:
     paths:
       - '.github/workflows/ci.yml'
+      - '.github/workflows/elixir_version_to_otp_version.json'
       - 'lib/**'
       - 'mix.*'
       - 'priv/**'
