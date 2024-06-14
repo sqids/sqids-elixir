@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Elixir 1.17 to CI
 - OTP 27.0 to CI
 
+### Fixed
+
+- compilation warnings on Elixir 1.17
+
 ## [0.1.3] - 2024-02-08
 
 ### Added
