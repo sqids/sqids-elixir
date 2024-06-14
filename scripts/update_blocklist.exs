@@ -3,6 +3,8 @@
 defmodule Sqids.BlocklistUpdater do
   @moduledoc false
 
+  import ExUnit.Assertions
+
   require Logger
 
   @path_of_canonical_json Path.join(["deps", "sqids_blocklist", "output", "blocklist.json"])
