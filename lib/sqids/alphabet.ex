@@ -56,7 +56,7 @@ defmodule Sqids.Alphabet do
   def char_at!(alphabet, index), do: Map.fetch!(alphabet, index)
 
   @spec split_and_exchange!(t(), index) :: t()
-  def split_and_exchange!(alphabet, split_index) when split_index in 0..(map_size(alphabet) - 1) do
+  def split_and_exchange!(alphabet, split_index) when split_index in 0..(map_size(alphabet) - 1)//1 do
     alphabet_size = map_size(alphabet)
 
     map(alphabet, fn {index, char} ->
@@ -82,7 +82,7 @@ defmodule Sqids.Alphabet do
   end
 
   @spec get_slice_chars!(t(), pos_integer) :: [byte, ...]
-  def get_slice_chars!(alphabet, size) when size in 1..map_size(alphabet) do
+  def get_slice_chars!(alphabet, size) when size in 1..map_size(alphabet)//1 do
     Enum.reduce((size - 1)..0, _acc = [], fn index, acc -> [char_at!(alphabet, index) | acc] end)
   end
 
