@@ -2,8 +2,6 @@ defmodule Sqids.Hacks do
   @moduledoc "Workarounds"
   @moduledoc since: "0.1.2"
 
-  require Logger
-
   @doc """
   Function to work around Dialyzer warnings on violating
   type opacity when Sqids context is placed in a module attribute, since it
@@ -19,7 +17,9 @@ defmodule Sqids.Hacks do
     using_mod_str = inspect(using_mod)
 
     if missed_opts === [] do
-      log_warning("""
+      # Use Erlang's logger cause Logger.warning() wasn't available before
+      # Elixir 1.11 and Styler replaces Logger.warn() with Logger.warning()...
+      :logger.warning("""
       Direct call of #{using_mod_str}.child_spec/1 may lead to unintended results in the future.
 
       Update #{using_mod_str}'s entry under your supervisor,
@@ -69,11 +69,5 @@ defmodule Sqids.Hacks do
       * https://github.com/sqids/sqids-elixir/issues/32
       """
     end
-  end
-
-  if Version.match?(System.version(), "~> 1.11") do
-    def log_warning(msg), do: Logger.warning(msg)
-  else
-    def log_warning(msg), do: Logger.warning(msg)
   end
 end

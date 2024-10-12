@@ -17,25 +17,18 @@ defmodule Sqids.MixProject do
       elixirc_paths: elixirc_paths(mix_env),
       elixirc_options: elixirc_options(mix_env),
       docs: docs(),
-      extra_applications: [:logger],
       test_coverage: [
         summary: [
           threshold: 93
         ]
       ],
-      dialyzer: [plt_add_apps: [:ex_unit, :logger]],
+      dialyzer: [plt_add_apps: [:ex_unit]],
       package: package()
     ]
   end
 
   defp description do
     "Generate YouTube-looking IDs from numbers"
-  end
-
-  def application do
-    [
-      extra_applications: [:logger]
-    ]
   end
 
   defp deps do
