@@ -743,6 +743,91 @@ defmodule SqidsTest do
       end
     end
   end
+
+  defmodule UseOfWrongChildSpecFunction do
+    @moduledoc false
+    use ExUnit.Case, async: true
+
+    test "Raise on inconsistent options (alphabet)" do
+      assert_raise RuntimeError, ~r/Inconsistent options for /, fn ->
+        run_test(alphabet: "abc")
+      end
+    end
+
+    test "Raise on inconsistent options (min_length)" do
+      assert_raise RuntimeError, ~r/Inconsistent options for /, fn ->
+        run_test(min_length: 10)
+      end
+    end
+
+    test "Raise on inconsistent options (blocklist)" do
+      assert_raise RuntimeError, ~r/Inconsistent options for /, fn ->
+        run_test(blocklist: ["hmmm"])
+      end
+    end
+
+    test "Raise on inconsistent options (alphabet + min_length + blocklist)" do
+      assert_raise RuntimeError, ~r/Inconsistent options for /, fn ->
+        run_test(
+          alphabet: "zyx",
+          min_length: 7,
+          blocklist: ["hmmm"]
+        )
+      end
+    end
+
+    test "Raise on inconsistent options (alphabet vs. alphabet)" do
+      assert_raise RuntimeError, ~r/Inconsistent options for /, fn ->
+        run_test([alphabet: "abc"], alphabet: "xyz")
+      end
+    end
+
+    test "Raise on inconsistent options (min_length vs. min_length)" do
+      assert_raise RuntimeError, ~r/Inconsistent options for /, fn ->
+        run_test([min_length: 10], min_length: 12)
+      end
+    end
+
+    test "Raise on inconsistent options (blocklist vs. blocklist)" do
+      assert_raise RuntimeError, ~r/Inconsistent options for /, fn ->
+        run_test([blocklist: ["hmmm"]], blocklist: ["oohhh"])
+      end
+    end
+
+    test "Log on child_spec/0 not being used" do
+      assert match?(
+               {:ok, _pid},
+               run_test(
+                 [
+                   alphabet: "equivalnt",
+                   min_length: 40
+                 ],
+                 min_length: 40,
+                 alphabet: "equivalnt"
+               )
+             )
+    end
+
+    defp run_test(module_opts, passed_opts \\ []) do
+      module_name = String.to_atom("#{__MODULE__}.UsingModule.#{:rand.uniform(Bitwise.<<<(1, 64))}")
+
+      module_content =
+        quote do
+          use Sqids
+
+          @impl true
+          def child_spec, do: child_spec(unquote(Macro.escape(module_opts)))
+        end
+
+      Module.create(module_name, module_content, Macro.Env.location(__ENV__))
+
+      wrong_child_spec = module_name.child_spec(passed_opts)
+      %{start: {mod, fun, args}} = wrong_child_spec
+
+      Process.flag(:trap_exit, true)
+      apply(mod, fun, args)
+    end
+  end
 end
 
 # doctest_file was added on Elixir 1.15
