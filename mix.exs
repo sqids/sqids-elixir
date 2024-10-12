@@ -61,7 +61,7 @@ defmodule Sqids.MixProject do
 
   defp maybe_styler_dep do
     if elixir_vsn_match?("~> 1.14") do
-      {:styler, "~> 0.8", only: [:dev, :test], runtime: false}
+      {:styler, "~> 1.1", only: [:dev, :test], runtime: false}
     else
       []
     end
