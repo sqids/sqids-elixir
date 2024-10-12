@@ -301,14 +301,14 @@ defmodule Sqids do
   defp encode_input_numbers_recur([input | next], alphabet, acc) do
     encoded_number = encode_input_number(input, alphabet)
 
-    if next !== [] do
+    if next === [] do
+      acc = [acc, encoded_number]
+      {acc, alphabet}
+    else
       separator = Alphabet.char_at!(alphabet, 0)
       alphabet = Alphabet.shuffle(alphabet)
       acc = [acc, encoded_number, separator]
       encode_input_numbers_recur(next, alphabet, acc)
-    else
-      acc = [acc, encoded_number]
-      {acc, alphabet}
     end
   end
 
