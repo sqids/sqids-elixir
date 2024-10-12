@@ -5,15 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2024-10-12
 
 ### Added
 
 - Elixir 1.17 to CI
 - OTP 27.0 to CI
 
+### Changed
+
+- [BREAKING] in supervised Sqids, if you had some non-default options declared
+  but only the module's name defined as the supervisor child (as was
+  recommended by docs), the options wouldn't work. Sqids now raises if this
+  situation is detected to nudge users towards fixing it in the way that's best
+  for each individual.
+
 ### Fixed
 
+- documentation on supervised Sqids: intended options were not passed
 - compilation warnings on Elixir 1.17
 
 ## [0.1.3] - 2024-02-08
