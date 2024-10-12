@@ -16,20 +16,21 @@ defmodule Sqids.Hacks do
   @spec raise_exception_if_missed_desired_options(Sqids.opts(), Sqids.opts(), module) :: :ok
   def raise_exception_if_missed_desired_options(opts, desired_opts, using_mod) do
     missed_opts = Sqids.different_opts(opts, desired_opts)
+    using_mod_str = inspect(using_mod)
 
     if missed_opts === [] do
       Logger.warning("""
-      Direct call of #{inspect(using_mod)}.child_spec/1 may lead to unintended results in the future.
+      Direct call of #{using_mod_str}.child_spec/1 may lead to unintended results in the future.
 
-      Update #{inspect(using_mod)}'s entry under your supervisor,
+      Update #{using_mod_str}'s entry under your supervisor,
       from:
         [
-          #{inspect(using_mod)}
+          #{using_mod_str}
         ]
 
       To:
         [
-          #{inspect(using_mod)}.child_spec()
+          #{using_mod_str}.child_spec()
         ]
 
       Apologies for the disruption. Context for the issue:
@@ -37,37 +38,31 @@ defmodule Sqids.Hacks do
       """)
     else
       raise """
+      Inconsistent options for #{using_mod_str}.
 
-      The following Sqids options were declared but are not being used:
+      In #{using_mod_str}.child_spec/0 you declared the following options:
+      * #{inspect(desired_opts, pretty: true)}
+
+      However, these are the ones in use:
+      * #{inspect(opts, pretty: true)}
+
+      Noticeably, the following are missing or different:
       * #{inspect(missed_opts, pretty: true)}
 
-      IF YOU START USING THEM NOW IT WILL BREAK COMPATIBILITY WITH PREVIOUSLY ENCODED IDS.
+      ---------
+      You can solve this by changing #{using_mod_str}.child_spec/0 in either of two ways:
+      A) SAFEST: declare the options in use: #{inspect(opts)}, or
+      B) UNSAFE: keep the options you intended, WHICH BREAKS COMPATIBILITY
+         WITH PREVIOUSLY ENCODED IDs.
 
-      How can I fix this?
-
-      First step is optional: if you don't want to breaking existing IDs,
-      update your #{inspect(using_mod)} options to match the ones in use:
-
-        ```
-        defmodule #{using_mod} do
-          def child_spec do
-            # Was: child_spec(#{inspect(desired_opts)})
-
-            child_spec(
-              #{inspect(opts, pretty: true)}
-            )
-          end
-        end
-        ```
-
-      Second step: update #{inspect(using_mod)}'s entry under your supervisor, from:
+      Then, update #{using_mod_str}'s entry under its Supervisor, from:
         [
-          #{inspect(using_mod)}
+          #{using_mod_str}
         ]
 
       To:
         [
-          #{inspect(using_mod)}.child_spec()
+          #{using_mod_str}.child_spec()
         ]
 
       Apologies for the disruption. Context for the issue:
