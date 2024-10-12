@@ -195,6 +195,44 @@ defmodule Sqids do
     end
   end
 
+  @doc false
+  @spec different_opts(opts, opts) :: opts
+  # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
+  def different_opts(opts1, opts2) do
+    alphabet_str1 = opts1[:alphabet] || @default_alphabet
+    min_length1 = opts1[:min_length] || @default_min_length
+    blocklist_words1 = opts1[:blocklist] || :default
+
+    alphabet_str2 = opts2[:alphabet] || @default_alphabet
+    min_length2 = opts2[:min_length] || @default_min_length
+    blocklist_words2 = opts2[:blocklist] || :default
+
+    different_opts = []
+
+    different_opts =
+      if alphabet_str2 === alphabet_str1 do
+        different_opts
+      else
+        different_opts ++ [alphabet: alphabet_str2]
+      end
+
+    different_opts =
+      if min_length2 === min_length1 do
+        different_opts
+      else
+        different_opts ++ [min_length: min_length2]
+      end
+
+    if blocklist_words2 === :default !== (blocklist_words1 === :default) or
+         (blocklist_words2 !== :default and
+            blocklist_words1 !== :default and
+            Enum.sort(Enum.uniq(blocklist_words2)) !== Enum.sort(Enum.uniq(blocklist_words1))) do
+      different_opts ++ [blocklist: blocklist_words2]
+    else
+      different_opts
+    end
+  end
+
   ## Internal Functions: Encoding
 
   @spec read_default_blocklist_words! :: [String.t()]
@@ -523,6 +561,14 @@ defmodule Sqids do
       Starts `Sqids.Agent` for #{__MODULE__}.
       """
       def start_link(opts) do
+        case __MODULE__.child_spec() do
+          %{start: {__MODULE__, :start_link, [desired_opts]}} when desired_opts !== opts ->
+            Sqids.Hacks.raise_exception_if_missed_desired_options(opts, desired_opts, __MODULE__)
+
+          _child_spec ->
+            :ok
+        end
+
         shared_state_init = {&Sqids.new/1, [opts]}
         Sqids.Agent.start_link(__MODULE__, shared_state_init)
       end

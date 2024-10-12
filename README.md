@@ -141,7 +141,7 @@ iex> defmodule MyApp.Application do
 iex>   # ...
 iex>   def start(_type, _args) do
 iex>      children = [
-iex>        MyApp.SupervisedSqids,
+iex>        MyApp.SupervisedSqids.child_spec(),
 iex>        # ...
 iex>      ]
 iex>

@@ -22,7 +22,7 @@ defmodule Sqids.MixProject do
           threshold: 93
         ]
       ],
-      dialyzer: [plt_add_apps: [:ex_unit]],
+      dialyzer: [plt_add_apps: [:ex_unit, :logger]],
       package: package()
     ]
   end
