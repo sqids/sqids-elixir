@@ -74,6 +74,6 @@ defmodule Sqids.Hacks do
   if Version.match?(System.version(), "~> 1.11") do
     def log_warning(msg), do: Logger.warning(msg)
   else
-    def log_warning(msg), do: Logger.warning(msg)
+    def log_warning(msg), do: Logger.warn(msg)
   end
 end
