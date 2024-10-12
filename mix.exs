@@ -32,6 +32,12 @@ defmodule Sqids.MixProject do
     "Generate YouTube-looking IDs from numbers"
   end
 
+  def application do
+    [
+      extra_applications: [:logger]
+    ]
+  end
+
   defp deps do
     List.flatten([
       {:ex_doc, "~> 0.30", only: :dev, runtime: false},
