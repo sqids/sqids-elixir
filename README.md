@@ -60,7 +60,7 @@ The package can be installed by adding `sqids` to your list of dependencies in
 ```elixir
 def deps do
   [
-    {:sqids, "~> 0.1.0"}
+    {:sqids, "~> 0.2.0"}
   ]
 end
 ```
