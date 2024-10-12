@@ -17,6 +17,7 @@ defmodule Sqids.MixProject do
       elixirc_paths: elixirc_paths(mix_env),
       elixirc_options: elixirc_options(mix_env),
       docs: docs(),
+      extra_applications: [:logger],
       test_coverage: [
         summary: [
           threshold: 93
