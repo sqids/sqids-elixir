@@ -83,7 +83,9 @@ defmodule Sqids.Alphabet do
 
   @spec get_slice_chars!(t(), pos_integer) :: [byte, ...]
   def get_slice_chars!(alphabet, size) when size >= 1 and size <= map_size(alphabet) do
-    Enum.reduce((size - 1)..0, _acc = [], fn index, acc -> [char_at!(alphabet, index) | acc] end)
+    (size - 1)
+    |> Range.new(0, -1)
+    |> Enum.reduce(_acc = [], fn index, acc -> [char_at!(alphabet, index) | acc] end)
   end
 
   @spec known_symbol?(t(), String.t()) :: boolean
