@@ -84,7 +84,7 @@ defmodule Sqids.Alphabet do
   @spec get_slice_chars!(t(), pos_integer) :: [byte, ...]
   def get_slice_chars!(alphabet, size) when size >= 1 and size <= map_size(alphabet) do
     (size - 1)
-    |> Range.new(0, -1)
+    |> negative_range(0)
     |> Enum.reduce(_acc = [], fn index, acc -> [char_at!(alphabet, index) | acc] end)
   end
 
@@ -107,6 +107,12 @@ defmodule Sqids.Alphabet do
   end
 
   ## Internal
+
+  if Version.match?(System.version(), "~> 1.17") do
+    defp negative_range(a, b), do: a..b//-1
+  else
+    defp negative_range(a, b), do: a..b
+  end
 
   defp validate_alphabet_is_utf8_string(alphabet_str) do
     if is_binary(alphabet_str) and String.valid?(alphabet_str) do
