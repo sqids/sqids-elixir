@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Elixir 1.18 to CI
 - OTP 27.2 to CI
+- latest blocklist tweaks
 
 ### Fixed
 
