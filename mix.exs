@@ -11,7 +11,7 @@ defmodule Sqids.MixProject do
       app: :sqids,
       version: @version,
       description: description(),
-      elixir: "~> 1.7",
+      elixir: "~> 1.7", # but only 1.11+ is supported
       start_permanent: mix_env === :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(mix_env),

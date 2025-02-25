@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - CI from Ubuntu 20.04 to 22.04
+- oldest supported Elixir version from 1.7 to 1.11
+- oldest supported OTP version from 21 to 24
 
 ## [0.2.1] - 2025-02-06
 
