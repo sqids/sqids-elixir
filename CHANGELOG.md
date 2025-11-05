@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Elixir 1.19 to CI
+- OTP 28.1 to CI
+
 ### Changed
 
 - CI from Ubuntu 20.04 to 22.04
