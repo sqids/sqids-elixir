@@ -163,13 +163,11 @@ defmodule Sqids do
   @spec decode!(sqids, id) :: numbers
         when sqids: t(), id: String.t(), numbers: [non_neg_integer]
   def decode!(sqids, id) do
-    case decode(sqids, id) do
-      {:ok, numbers} ->
-        numbers
+    {:ok, numbers} = decode(sqids, id)
+    numbers
 
-        # {:error, reason} ->
-        #   raise error_reason_to_string(reason)
-    end
+    # {:error, reason} ->
+    #   raise error_reason_to_string(reason)
   end
 
   ## Internal Functions
