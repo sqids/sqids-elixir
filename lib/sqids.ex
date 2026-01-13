@@ -52,6 +52,10 @@ defmodule Sqids do
 
   ## Guards
 
+  # It is an expensive check, however it's the only way to check that a list is
+  # proper from within a guard.
+  #
+  # credo:disable-for-next-line Credo.Check.Warning.ExpensiveEmptyEnumCheck
   defguardp is_proper_list(v) when length(v) >= 0
 
   ## API Functions
