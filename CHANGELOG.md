@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Elixir 1.19 to CI
-- OTP 28.1 to CI
+- OTP 28.5 to CI
 
 ### Changed
 
