@@ -2,7 +2,7 @@
 
 [![Hex downloads](https://img.shields.io/hexpm/dt/sqids.svg)](https://hex.pm/packages/sqids)
 [![License](https://img.shields.io/hexpm/l/sqids.svg)](https://github.com/sqids/sqids-elixir/blob/main/LICENSE)
-[![Elixir Versions](https://img.shields.io/badge/Elixir-1.11%20to%201.19-blue)](https://elixir-lang.org/)
+[![Elixir Versions](https://img.shields.io/badge/Elixir-1.11%20to%201.20-blue)](https://elixir-lang.org/)
 [![Erlang Versions](https://img.shields.io/badge/Erlang%2FOTP-24.3%20to%2028-blue)](https://www.erlang.org)
 [![CI status](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml/badge.svg)](https://github.com/sqids/sqids-elixir/actions/workflows/ci.yml)
 
