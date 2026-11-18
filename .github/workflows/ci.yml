@@ -96,6 +96,15 @@ jobs:
       - name: Refresh dependencies
         run: mix do deps.get, deps.clean --unused
 
+      - name: Check for retired dependencies and security advisories
+        run: mix hex.audit --format sarif --output hex-audit.sarif
+
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: hex-audit.sarif
+          category: hex-audit
+
       - name: Assert code is formatted
         if: ${{matrix.elixir_vsn == env.ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE}}
         run: mix format --check-formatted
