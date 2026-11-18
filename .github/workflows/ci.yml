@@ -34,6 +34,9 @@ jobs:
     name: >
       Run CI with Elixir ${{matrix.elixir_vsn}}
     runs-on: ${{matrix.os}}
+    permissions:
+      contents: read
+      security-events: write # for uploading Hex audit SARIF
     strategy:
       matrix:
         elixir_vsn: [
