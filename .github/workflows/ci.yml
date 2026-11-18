@@ -26,7 +26,7 @@ on:
   workflow_dispatch: # enables "click to run" button
 
 env:
-  ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE: '1.20' # Should be highest in matrix
+  ELIXIR_VSN_FOR_MORE_ADVANCED_CHECKS: '1.20' # Should be highest in matrix
   ELIXIR_VERSIONS_ON_WHICH_TO_RUN_DIALYZER: "['1.12', '1.13', '1.14', '1.15', '1.16', '1.17', '1.18', '1.19', '1.20']"
 
 jobs:
@@ -99,21 +99,33 @@ jobs:
       - name: Refresh dependencies
         run: mix do deps.get, deps.clean --unused
 
-      - name: Check for retired dependencies and security advisories
+      # mix.lock is the same across the matrix, so we audit only once.
+      # SARIF output requires Hex >= 2.7.0 and OTP >= 27.
+      - id: hex-audit
+        name: Check for retired dependencies and security advisories
+        if: ${{matrix.elixir_vsn == env.ELIXIR_VSN_FOR_MORE_ADVANCED_CHECKS}}
         run: mix hex.audit --format sarif --output hex-audit.sarif
 
-      - uses: github/codeql-action/upload-sarif@v4
-        if: always()
+      - name: Upload Hex audit results
+        # Upload even if the audit found something, but not on PRs from forks
+        # (their token can't write security events)
+        if: >-
+          ${{
+            !cancelled()
+            && (steps.hex-audit.outcome == 'success' || steps.hex-audit.outcome == 'failure')
+            && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+          }}
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: hex-audit.sarif
           category: hex-audit
 
       - name: Assert code is formatted
-        if: ${{matrix.elixir_vsn == env.ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE}}
+        if: ${{matrix.elixir_vsn == env.ELIXIR_VSN_FOR_MORE_ADVANCED_CHECKS}}
         run: mix format --check-formatted
 
       - name: Run Credo
-        if: ${{matrix.elixir_vsn == env.ELIXIR_VERSION_ON_WHICH_TO_CHECK_STYLE}}
+        if: ${{matrix.elixir_vsn == env.ELIXIR_VSN_FOR_MORE_ADVANCED_CHECKS}}
         run: mix credo --strict
 
       - name: Run tests
